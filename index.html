@@ -690,7 +690,7 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 <!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAyYwqEpHbJTAtHxjBrHdrt-CURS4eDgYA",
@@ -699,44 +699,58 @@ const firebaseConfig = {
   projectId: "lr-2026-edd00",
   storageBucket: "lr-2026-edd00.firebasestorage.app",
   messagingSenderId: "431709705453",
-  appId: "1:431709705453:web:4ca1ddf52469fe181be8e4",
-  measurementId: "G-BRZF6WPED4"
+  appId: "1:431709705453:web:bfa85561b71742f01be8e4",
+  measurementId: "G-2ZP8Z4HZDK"
 };
 
 const _fbApp = initializeApp(firebaseConfig);
 const _db = getDatabase(_fbApp);
 const _dbRef = ref(_db, 'lr2026');
 
-// Firebase → 앱 실시간 수신
-// 다른 기기에서 데이터가 바뀌면 자동으로 반영
-onValue(_dbRef, (snapshot) => {
-  // 연결 성공 → 초록 점
-  const dot = document.getElementById('fb-status');
-  if(dot) dot.style.background = '#4caf7d';
+// ── Firebase → 앱으로 수신 ──
+// module 스크립트는 일반 스크립트 변수에 직접 접근 불가하므로
+// window.__fbReady 콜백 패턴으로 브릿지 처리
+function connectFirebase() {
+  onValue(_dbRef, (snapshot) => {
+    // 연결 성공 표시
+    const dot = document.getElementById('fb-status');
+    if (dot) dot.style.background = '#4caf7d';
 
-  const remote = snapshot.val();
-  if (!remote) return;
-  // 현재 로컬보다 remote가 더 최신인지 확인 (updatedAt 기준)
-  if (!S.updatedAt || (remote.updatedAt && remote.updatedAt > S.updatedAt)) {
-    Object.assign(S, remote);
-    repairBracket();
-    localStorage.setItem('lr2026', JSON.stringify(S));
-    if (S.init) refreshAll();
-    showSyncBadge('🔄 동기화됨');
-  }
-}, (error) => {
-  // 연결 실패 → 빨간 점
-  const dot = document.getElementById('fb-status');
-  if(dot) dot.style.background = '#ff5c5c';
-  console.error('Firebase 수신 오류:', error);
-});
+    const remote = snapshot.val();
+    if (!remote) return;
 
-// Firebase에 저장하는 함수 (기존 save()에서 호출됨)
-window._fbSave = function(data) {
-  set(_dbRef, data).catch(e => console.error('Firebase 저장 실패:', e));
-};
+    // window.S, window.repairBracket 등을 통해 접근
+    const S = window.S;
+    if (!S) return;
 
-console.log('Firebase 연결 완료');
+    // updatedAt 기준으로 더 최신 데이터만 반영
+    if (!S.updatedAt || (remote.updatedAt && remote.updatedAt > S.updatedAt)) {
+      // S 객체를 통째로 교체
+      Object.keys(remote).forEach(k => { window.S[k] = remote[k]; });
+      if (typeof window.repairBracket === 'function') window.repairBracket();
+      try { localStorage.setItem('lr2026', JSON.stringify(window.S)); } catch(e) {}
+      if (window.S.init && typeof window.refreshAll === 'function') window.refreshAll();
+      if (typeof window.showSyncBadge === 'function') window.showSyncBadge('🔄 동기화됨');
+    }
+  }, (error) => {
+    const dot = document.getElementById('fb-status');
+    if (dot) dot.style.background = '#ff5c5c';
+    console.error('Firebase 오류:', error);
+  });
+
+  // 저장 함수를 window에 등록
+  window._fbSave = function(data) {
+    set(_dbRef, data).catch(e => console.error('Firebase 저장 실패:', e));
+  };
+}
+
+// 일반 스크립트가 로드 완료된 후 실행 (DOMContentLoaded 이후)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', connectFirebase);
+} else {
+  // 이미 로드된 경우 약간 지연 후 실행 (일반 script 초기화 완료 대기)
+  setTimeout(connectFirebase, 100);
+}
 </script>
 
 <script>
@@ -757,6 +771,8 @@ function avcTeam(p,i){const tc=teamColor(p.team||'');return tc||{bg:AB[i%AB.leng
 
 // ─── STATE ───
 let S={init:false,players:[],matches:[],bracket:[]};
+// Firebase 브릿지용 window 노출 (module 스크립트에서 접근)
+window.S = S;
 let MS={};
 let pSortKey='pts',pSortDir=-1;
 let tSortKey='totalPts',tSortDir=-1;
@@ -777,6 +793,7 @@ function repairBracket(){
 }
 function save(){
   S.updatedAt = Date.now();
+  window.S = S; // Firebase 브릿지 동기화
   try{localStorage.setItem('lr2026',JSON.stringify(S));}catch(e){}
   if(typeof window._fbSave === 'function') window._fbSave(S);
 }
@@ -1023,6 +1040,10 @@ function showSyncBadge(msg){
   clearTimeout(el._t);
   el._t=setTimeout(()=>el.classList.remove('show'),2500);
 }
+// Firebase 브릿지용 window 노출
+window.repairBracket = repairBracket;
+window.refreshAll = () => refreshAll();
+window.showSyncBadge = showSyncBadge;
 
 // ─── SETUP ───
 let setupPs=[];
