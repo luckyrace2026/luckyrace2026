@@ -200,164 +200,8 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 .moverlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
 .mbox{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r3);padding:24px;width:100%;max-width:400px;max-height:80vh;overflow-y:auto}
 .mtitle{font-size:16px;font-weight:500;margin-bottom:16px}
-/* SYNC BADGE */
-.sync-badge{position:fixed;bottom:16px;right:16px;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r2);padding:7px 12px;font-size:12px;color:var(--green);font-family:'DM Mono',monospace;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
-.sync-badge.show{opacity:1}
-
-
 .frow{margin-bottom:12px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-/* ════════════════════════════════════════
-   MOBILE INTERFACE  (≤ 600px)
-   PC 인터페이스 완전 유지 + 모바일 신규
-   ════════════════════════════════════════ */
-@media (max-width:600px){
-
-  /* ── 전체 레이아웃 ── */
-  body{font-size:13px;-webkit-text-size-adjust:100%}
-  #app{max-width:100%;width:100%}
-  .tab{padding:10px 10px}
-
-  /* ── 헤더 ── */
-  .app-header{padding:0 10px}
-  .hb-title{font-size:13px}
-  .hb-label{font-size:8px}
-  #fb-status{width:7px;height:7px}
-  .ha .btn{padding:5px 8px;font-size:11px}
-  .ha{gap:4px}
-
-  /* ── 네비게이션 (아이콘+짧은 텍스트) ── */
-  .main-nav{padding:0 2px}
-  .nav-btn{font-size:10px;padding:10px 1px}
-
-  /* ── 상단 통계 타일 ── */
-  .stat-row{gap:5px}
-  .st-val{font-size:17px}
-  .st-lbl{font-size:9px}
-
-  /* ── Top3 카드: 2열 ── */
-  .top3-grid{grid-template-columns:1fr 1fr;gap:6px}
-  .top3-card{padding:8px 9px}
-  .top3-title{font-size:9px;margin-bottom:5px}
-  .top3-row{font-size:10px;padding:2px 0;gap:4px}
-  .top3-val{font-size:10px}
-
-  /* ── 이너 탭 ── */
-  .inner-nav{margin-bottom:10px}
-  .inner-btn{font-size:11px;padding:6px 4px}
-
-  /* ── 정렬 칩 ── */
-  .sort-bar{gap:4px;margin-bottom:8px;flex-wrap:wrap}
-  .sort-label{font-size:10px;white-space:nowrap}
-  .chip{padding:3px 7px;font-size:10px}
-
-  /* ── 순위 테이블 ── */
-  /* 선수 순위: 스크롤 허용하되 최소 너비 보장 */
-  .tscroll{-webkit-overflow-scrolling:touch}
-  .st-tbl{font-size:11px;min-width:520px}  /* 가로 스크롤로 전체 컬럼 확인 가능 */
-  .st-tbl th{padding:7px 6px;font-size:9px}
-  .st-tbl td{padding:8px 6px}
-  .avatar{width:22px;height:22px;font-size:8px}
-  .t-ava{width:24px;height:24px;font-size:9px}
-  .w,.d,.l{padding:1px 4px;font-size:9px}
-  .rn{font-size:11px}
-
-  /* ── 기록 카드 ── */
-  .rec-grid{grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
-  .rec-card{padding:8px 9px}
-  .rec-title{font-size:9px}
-  .rec-val{font-size:12px}
-  .rec-sub{font-size:10px}
-
-  /* ── 경기 진행 탭 ── */
-  .sub-nav{gap:4px;margin-bottom:10px}
-  .sub-btn{padding:5px 10px;font-size:11px}
-  .game-filter select{font-size:12px;padding:6px 8px}
-
-  /* ── 대진표 카드 ── */
-  .mc{padding:8px 10px;margin-bottom:6px}
-  .mcl{font-size:9px}
-  .sn{font-size:12px}
-  .ss{font-size:13px}
-  .mc .btn-sm{font-size:10px;padding:3px 7px}
-  .rsep{font-size:9px;margin:10px 0 6px}
-  .gtt{font-size:13px}
-
-  /* ── 경기 진행 화면 ── */
-  .scoreboard{gap:7px}
-  .scr-tile{padding:10px 8px}
-  .scr-name{font-size:11px}
-  .scr-num{font-size:28px}
-  .scr-sub{font-size:10px}
-  .scr-prob{font-size:10px;margin-top:5px;padding-top:5px}
-  .scr-hint{font-size:9px}
-  .dots{gap:2px;margin-top:5px}
-  .dot{width:6px;height:6px}
-  .diff-bar{padding:5px 10px;font-size:11px}
-  .diff-val{font-size:14px}
-  .dzone{padding:14px 12px;margin-bottom:10px}
-  .dturn{font-size:11px;margin-bottom:6px}
-  .dnum{font-size:50px;margin-bottom:10px}
-  .agrid{gap:6px}
-  .abtn{padding:10px 8px;font-size:12px}
-  .logwrap{max-height:110px}
-  .loge{font-size:11px}
-
-  /* ── 경기 결과 화면 ── */
-  .rbanner{padding:14px}
-  .rwin{font-size:18px}
-  .rfn{font-size:24px}
-  .rpn{font-size:11px}
-  .rraw{font-size:10px}
-
-  /* ── 기록 탭 ── */
-  .hitem{padding:8px 0}
-  .hsc{font-size:13px}
-  .hmeta{margin-bottom:4px}
-
-  /* ── 선수 탭 ── */
-  .prow{gap:8px;padding:8px 0}
-  .pname{font-size:13px}
-  .psub{font-size:10px}
-
-  /* ── 타이브레이커 ── */
-  .tbnum{font-size:36px}
-  .tbn{font-size:11px}
-
-  /* ── 모달 ── */
-  .moverlay{padding:12px}
-  .mbox{padding:16px;border-radius:10px}
-  .pm-overlay{padding:10px}
-  .pm-box{padding:14px}
-  .mtitle{font-size:14px;margin-bottom:12px}
-
-  /* ── 입력 폼 ── */
-  .fgrid{grid-template-columns:1fr 1fr}  /* 유지 */
-  input,select{padding:8px 10px;font-size:13px}
-  label{font-size:10px}
-
-  /* ── 선수 상세 모달 ── */
-  .pm-box .stat-tile{padding:8px}
-  .pm-box .st-val{font-size:16px}
-
-  /* ── 플레이오프 ── */
-  .po-section{padding:10px 12px;margin-bottom:10px}
-  .po-title{font-size:12px}
-  .po-match{padding:7px}
-
-  /* ── 설정 버튼 ── */
-  .setup-title{font-size:22px}
-  .setup-sub{font-size:12px;margin-bottom:20px}
-  .setup-logo{font-size:10px;margin-bottom:18px}
-
-  /* ── 동기화 배지 ── */
-  .sync-badge{bottom:12px;right:12px;font-size:11px;padding:6px 10px}
-
-  /* ── 초기화 모드 배너 ── */
-  #reset-mode-banner{font-size:11px;padding:6px 10px;flex-wrap:wrap;gap:6px}
-  #reset-mode-banner span{flex:1;min-width:0}
-}
 /* TEAM COLORS */
 .tc-ITA{background:rgba(34,197,94,.18)!important;color:#16a34a!important}
 .tc-KIA{background:rgba(239,68,68,.18)!important;color:#b91c1c!important}
@@ -425,11 +269,7 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 <div id="view-main" class="hidden">
   <div class="app-header">
     <div class="hb"><div class="hb-label">Lucky Race</div><div class="hb-title">2026 정규 시즌</div></div>
-    <div class="ha">
-      <div id="fb-status" title="Firebase 연결 상태" style="width:8px;height:8px;border-radius:50%;background:var(--text3);margin-right:6px;flex-shrink:0;transition:background .3s"></div>
-      <button class="btn btn-sm" onclick="openRules()" style="margin-right:4px">규정집</button>
-      <button class="btn btn-sm" onclick="openSettings()">설정</button>
-    </div>
+    <div class="ha"><button class="btn btn-sm" onclick="openRules()" style="margin-right:4px">규정집</button><button class="btn btn-sm" onclick="openSettings()">설정</button></div>
   </div>
   <div class="main-nav">
     <button class="nav-btn active" onclick="gotoTab('standings',this)">순위</button>
@@ -467,11 +307,10 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
       <div class="tscroll">
         <table class="st-tbl">
           <thead><tr>
-            <th style="width:26px">#</th>
-            <th>선수</th>
+            <th style="width:26px">#</th><th>선수</th>
             <th class="n on" id="th-pts" onclick="setPSort('pts',null)">승점</th>
             <th class="n" id="th-cumScore" onclick="setPSort('cumScore',null)">누적 점수</th>
-            <th class="n" id="th-avgScore" onclick="setPSort('avgScore',null)">평균</th>
+            <th class="n" id="th-avgScore" onclick="setPSort('avgScore',null)">평균 점수</th>
             <th class="n" id="th-valueRating" onclick="setPSort('valueRating',null)">가치 평점</th>
             <th class="c" id="th-wins" onclick="setPSort('wins',null)">W</th>
             <th class="c" id="th-draws" onclick="setPSort('draws',null)">D</th>
@@ -748,7 +587,6 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 </div>
 
 </div><!-- #app -->
-<div id="sync-badge" class="sync-badge"></div>
 
 <!-- MODALS -->
 <div id="modal-rules" class="moverlay hidden" onclick="if(event.target===this)closeRules()">
@@ -841,72 +679,6 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
   </div>
 </div>
 
-<!-- Firebase SDK -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAyYwqEpHbJTAtHxjBrHdrt-CURS4eDgYA",
-  authDomain: "lr-2026-edd00.firebaseapp.com",
-  databaseURL: "https://lr-2026-edd00-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "lr-2026-edd00",
-  storageBucket: "lr-2026-edd00.firebasestorage.app",
-  messagingSenderId: "431709705453",
-  appId: "1:431709705453:web:bfa85561b71742f01be8e4",
-  measurementId: "G-2ZP8Z4HZDK"
-};
-
-const _fbApp = initializeApp(firebaseConfig);
-const _db = getDatabase(_fbApp);
-const _dbRef = ref(_db, 'lr2026');
-
-// ── Firebase → 앱으로 수신 ──
-// module 스크립트는 일반 스크립트 변수에 직접 접근 불가하므로
-// window.__fbReady 콜백 패턴으로 브릿지 처리
-function connectFirebase() {
-  onValue(_dbRef, (snapshot) => {
-    // 연결 성공 표시
-    const dot = document.getElementById('fb-status');
-    if (dot) dot.style.background = '#4caf7d';
-
-    const remote = snapshot.val();
-    if (!remote) return;
-
-    // window.S, window.repairBracket 등을 통해 접근
-    const S = window.S;
-    if (!S) return;
-
-    // updatedAt 기준으로 더 최신 데이터만 반영
-    if (!S.updatedAt || (remote.updatedAt && remote.updatedAt > S.updatedAt)) {
-      // S 객체를 통째로 교체
-      Object.keys(remote).forEach(k => { window.S[k] = remote[k]; });
-      if (typeof window.repairBracket === 'function') window.repairBracket();
-      try { localStorage.setItem('lr2026', JSON.stringify(window.S)); } catch(e) {}
-      if (window.S.init && typeof window.refreshAll === 'function') window.refreshAll();
-      if (typeof window.showSyncBadge === 'function') window.showSyncBadge('🔄 동기화됨');
-    }
-  }, (error) => {
-    const dot = document.getElementById('fb-status');
-    if (dot) dot.style.background = '#ff5c5c';
-    console.error('Firebase 오류:', error);
-  });
-
-  // 저장 함수를 window에 등록
-  window._fbSave = function(data) {
-    set(_dbRef, data).catch(e => console.error('Firebase 저장 실패:', e));
-  };
-}
-
-// 일반 스크립트가 로드 완료된 후 실행 (DOMContentLoaded 이후)
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', connectFirebase);
-} else {
-  // 이미 로드된 경우 약간 지연 후 실행 (일반 script 초기화 완료 대기)
-  setTimeout(connectFirebase, 100);
-}
-</script>
-
 <script>
 // ─── CONSTANTS ───
 // 순위별 시즌 승점 index=순위(1~20), [0]=미사용
@@ -925,8 +697,6 @@ function avcTeam(p,i){const tc=teamColor(p.team||'');return tc||{bg:AB[i%AB.leng
 
 // ─── STATE ───
 let S={init:false,players:[],matches:[],bracket:[]};
-// Firebase 브릿지용 window 노출 (module 스크립트에서 접근)
-window.S = S;
 let MS={};
 let pSortKey='pts',pSortDir=-1;
 let tSortKey='totalPts',tSortDir=-1;
@@ -945,12 +715,7 @@ function repairBracket(){
     }
   })));
 }
-function save(){
-  S.updatedAt = Date.now();
-  window.S = S; // Firebase 브릿지 동기화
-  try{localStorage.setItem('lr2026',JSON.stringify(S));}catch(e){}
-  if(typeof window._fbSave === 'function') window._fbSave(S);
-}
+function save(){try{localStorage.setItem('lr2026',JSON.stringify(S));}catch(e){}}
 load();
 
 // ─── HELPERS ───
@@ -1185,19 +950,6 @@ function showM(id){document.getElementById(id).classList.remove('hidden');}
 function hideM(id){document.getElementById(id).classList.add('hidden');}
 
 window.onload=()=>{repairBracket();if(S.init){showView('view-main');refreshAll();}else{showView('view-setup');renderSetupList();}};
-
-function showSyncBadge(msg){
-  const el=document.getElementById('sync-badge');
-  if(!el)return;
-  el.textContent=msg;
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t=setTimeout(()=>el.classList.remove('show'),2500);
-}
-// Firebase 브릿지용 window 노출
-window.repairBracket = repairBracket;
-window.refreshAll = () => refreshAll();
-window.showSyncBadge = showSyncBadge;
 
 // ─── SETUP ───
 let setupPs=[];
