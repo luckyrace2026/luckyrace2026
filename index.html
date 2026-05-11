@@ -200,6 +200,9 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 .moverlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
 .mbox{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r3);padding:24px;width:100%;max-width:400px;max-height:80vh;overflow-y:auto}
 .mtitle{font-size:16px;font-weight:500;margin-bottom:16px}
+/* SYNC BADGE */
+.sync-badge{position:fixed;bottom:16px;right:16px;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r2);padding:7px 12px;font-size:12px;color:var(--green);font-family:'DM Mono',monospace;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.sync-badge.show{opacity:1}
 .frow{margin-bottom:12px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 /* TEAM COLORS */
@@ -269,7 +272,11 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 <div id="view-main" class="hidden">
   <div class="app-header">
     <div class="hb"><div class="hb-label">Lucky Race</div><div class="hb-title">2026 정규 시즌</div></div>
-    <div class="ha"><button class="btn btn-sm" onclick="openRules()" style="margin-right:4px">규정집</button><button class="btn btn-sm" onclick="openSettings()">설정</button></div>
+    <div class="ha">
+      <div id="fb-status" title="Firebase 연결 상태" style="width:8px;height:8px;border-radius:50%;background:var(--text3);margin-right:6px;flex-shrink:0;transition:background .3s"></div>
+      <button class="btn btn-sm" onclick="openRules()" style="margin-right:4px">규정집</button>
+      <button class="btn btn-sm" onclick="openSettings()">설정</button>
+    </div>
   </div>
   <div class="main-nav">
     <button class="nav-btn active" onclick="gotoTab('standings',this)">순위</button>
@@ -587,6 +594,7 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 </div>
 
 </div><!-- #app -->
+<div id="sync-badge" class="sync-badge"></div>
 
 <!-- MODALS -->
 <div id="modal-rules" class="moverlay hidden" onclick="if(event.target===this)closeRules()">
@@ -679,6 +687,58 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
   </div>
 </div>
 
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAyYwqEpHbJTAtHxjBrHdrt-CURS4eDgYA",
+  authDomain: "lr-2026-edd00.firebaseapp.com",
+  databaseURL: "https://lr-2026-edd00-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "lr-2026-edd00",
+  storageBucket: "lr-2026-edd00.firebasestorage.app",
+  messagingSenderId: "431709705453",
+  appId: "1:431709705453:web:4ca1ddf52469fe181be8e4",
+  measurementId: "G-BRZF6WPED4"
+};
+
+const _fbApp = initializeApp(firebaseConfig);
+const _db = getDatabase(_fbApp);
+const _dbRef = ref(_db, 'lr2026');
+
+// Firebase → 앱 실시간 수신
+// 다른 기기에서 데이터가 바뀌면 자동으로 반영
+onValue(_dbRef, (snapshot) => {
+  // 연결 성공 → 초록 점
+  const dot = document.getElementById('fb-status');
+  if(dot) dot.style.background = '#4caf7d';
+
+  const remote = snapshot.val();
+  if (!remote) return;
+  // 현재 로컬보다 remote가 더 최신인지 확인 (updatedAt 기준)
+  if (!S.updatedAt || (remote.updatedAt && remote.updatedAt > S.updatedAt)) {
+    Object.assign(S, remote);
+    repairBracket();
+    localStorage.setItem('lr2026', JSON.stringify(S));
+    if (S.init) refreshAll();
+    showSyncBadge('🔄 동기화됨');
+  }
+}, (error) => {
+  // 연결 실패 → 빨간 점
+  const dot = document.getElementById('fb-status');
+  if(dot) dot.style.background = '#ff5c5c';
+  console.error('Firebase 수신 오류:', error);
+});
+
+// Firebase에 저장하는 함수 (기존 save()에서 호출됨)
+window._fbSave = function(data) {
+  set(_dbRef, data).catch(e => console.error('Firebase 저장 실패:', e));
+};
+
+console.log('Firebase 연결 완료');
+</script>
+
 <script>
 // ─── CONSTANTS ───
 // 순위별 시즌 승점 index=순위(1~20), [0]=미사용
@@ -715,7 +775,11 @@ function repairBracket(){
     }
   })));
 }
-function save(){try{localStorage.setItem('lr2026',JSON.stringify(S));}catch(e){}}
+function save(){
+  S.updatedAt = Date.now();
+  try{localStorage.setItem('lr2026',JSON.stringify(S));}catch(e){}
+  if(typeof window._fbSave === 'function') window._fbSave(S);
+}
 load();
 
 // ─── HELPERS ───
@@ -950,6 +1014,15 @@ function showM(id){document.getElementById(id).classList.remove('hidden');}
 function hideM(id){document.getElementById(id).classList.add('hidden');}
 
 window.onload=()=>{repairBracket();if(S.init){showView('view-main');refreshAll();}else{showView('view-setup');renderSetupList();}};
+
+function showSyncBadge(msg){
+  const el=document.getElementById('sync-badge');
+  if(!el)return;
+  el.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),2500);
+}
 
 // ─── SETUP ───
 let setupPs=[];
