@@ -80,6 +80,17 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 .stat-tile{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r2);padding:12px 14px;text-align:center}
 .st-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;font-family:'DM Mono',monospace;letter-spacing:.05em}
 .st-val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace}
+/* MATCH STATUS BAR */
+.msbar{display:grid;grid-template-columns:1fr 1fr;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
+.msbar-col{padding:14px 18px}
+.msbar-col+.msbar-col{border-left:1px solid var(--line)}
+.msbar-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px}
+.msbar-main{font-size:14px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:1.5}
+.msbar-game{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)}
+.msbar-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.msbar-vs{color:var(--text3);font-size:11px}
+.msbar-team{font-size:10px;color:var(--text3)}
+.msbar-none{font-size:13px;color:var(--text3);font-style:italic}
 /* SORT BAR */
 .sort-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .sort-label{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;flex-shrink:0}
@@ -203,6 +214,33 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 /* SYNC BADGE */
 .sync-badge{position:fixed;bottom:16px;right:16px;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r2);padding:7px 12px;font-size:12px;color:var(--green);font-family:'DM Mono',monospace;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
 .sync-badge.show{opacity:1}
+/* BROADCAST */
+.bc-matchup{background:var(--bg3);border-radius:var(--r2);margin-bottom:10px;overflow:hidden}
+.bc-match-header{padding:8px 14px;background:var(--bg4);display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.bc-match-header:hover{background:rgba(255,255,255,.06)}
+.bc-match-body{display:none;padding:14px}
+.bc-match-body.open{display:block}
+.bc-vs-row{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:14px}
+.bc-player-name{font-size:16px;font-weight:700}
+.bc-player-team{font-size:11px;color:var(--text3);margin-top:2px}
+.bc-vs-center{text-align:center;color:var(--text3);font-size:13px;font-weight:500}
+.bc-stats-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px}
+.bc-stats-tbl th{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);padding:6px 8px;text-align:center;border-bottom:1px solid var(--line);letter-spacing:.06em;text-transform:uppercase}
+.bc-stats-tbl td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:center;font-family:'DM Mono',monospace;font-size:12px}
+.bc-stats-tbl tr:last-child td{border-bottom:none}
+.bc-stat-label{text-align:center!important;color:var(--text2);font-family:inherit!important;font-size:12px!important}
+.bc-rank{font-size:10px;color:var(--text3);margin-left:3px}
+.bc-rank.r1{color:var(--accent)}
+.bc-rank.r2{color:#a0a8b0}
+.bc-rank.r3{color:#9e7a50}
+.bc-win-bar{border-radius:var(--r);overflow:hidden;height:36px;display:flex;margin-bottom:6px;background:var(--bg4)}
+.bc-win-seg{display:flex;align-items:center;padding:0 10px;font-size:13px;font-weight:700;transition:width .4s ease}
+.bc-win-seg.left{justify-content:flex-start;background:var(--blue);color:#fff;border-radius:var(--r) 0 0 var(--r)}
+.bc-win-seg.right{justify-content:flex-end;background:rgba(255,92,92,.7);color:#fff;border-radius:0 var(--r) var(--r) 0;margin-left:auto}
+.bc-win-names{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:10px;padding:0 2px}
+.bc-team-card{background:var(--bg3);border-radius:var(--r2);padding:12px 14px;margin-bottom:8px}
+.bc-team-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bc-status-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;font-weight:500;margin-right:4px;margin-bottom:4px}
 .frow{margin-bottom:12px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 /* TEAM COLORS */
@@ -274,6 +312,7 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
     <div class="hb"><div class="hb-label">Lucky Race</div><div class="hb-title">2026 정규 시즌</div></div>
     <div class="ha">
       <div id="fb-status" title="Firebase 연결 상태" style="width:8px;height:8px;border-radius:50%;background:var(--text3);margin-right:6px;flex-shrink:0;transition:background .3s"></div>
+      <button class="btn btn-sm" onclick="openBroadcast()" style="margin-right:4px">중계자료</button>
       <button class="btn btn-sm" onclick="openRules()" style="margin-right:4px">규정집</button>
       <button class="btn btn-sm" onclick="openSettings()">설정</button>
     </div>
@@ -288,11 +327,7 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 
   <!-- 순위 TAB -->
   <div id="tab-standings" class="tab active">
-    <div class="stat-row">
-      <div class="stat-tile"><div class="st-lbl">완료</div><div class="st-val" id="st-games">0</div></div>
-      <div class="stat-tile"><div class="st-lbl">선수</div><div class="st-val" id="st-players">0</div></div>
-      <div class="stat-tile"><div class="st-lbl">팀</div><div class="st-val" id="st-teams">0</div></div>
-    </div>
+    <div id="match-status-bar" style="margin-bottom:14px"></div>
     <div id="top3-cards-section" style="margin-bottom:14px"></div>
     <div class="inner-nav">
       <button class="inner-btn active" onclick="switchInner('player-rank',this)">선수 순위</button>
@@ -366,11 +401,20 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
       <button class="sub-btn" onclick="switchSub('manual',this)">수동 경기 진행</button>
     </div>
     <div id="sub-auto">
-      <div class="game-filter">
-        <select id="game-filter-sel" onchange="renderBracket()" style="max-width:160px">
+      <div class="game-filter" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <select id="game-filter-sel" onchange="onGameFilterChange()" style="max-width:160px">
           <option value="all">모든 경기</option>
           <option value="1경기">1경기</option><option value="2경기">2경기</option><option value="3경기">3경기</option><option value="4경기">4경기</option><option value="5경기">5경기</option><option value="6경기">6경기</option><option value="7경기">7경기</option><option value="8경기">8경기</option><option value="9경기">9경기</option><option value="10경기">10경기</option><option value="11경기">11경기</option><option value="12경기">12경기</option><option value="13경기">13경기</option><option value="14경기">14경기</option><option value="15경기">15경기</option><option value="16경기">16경기</option><option value="17경기">17경기</option><option value="18경기">18경기</option><option value="19경기">19경기</option><option value="20경기">20경기</option><option value="21경기">21경기</option><option value="22경기">22경기</option><option value="23경기">23경기</option><option value="24경기">24경기</option><option value="25경기">25경기</option>
         </select>
+        <select id="round-filter-sel" onchange="renderBracket()" style="max-width:120px">
+          <option value="all">모든 라운드</option>
+          <option value="예선전">예선전</option>
+          <option value="16강전">16강전</option>
+          <option value="8강전">8강전</option>
+          <option value="준결승">준결승</option>
+          <option value="결승">결승</option>
+        </select>
+        <button class="btn btn-sm btn-accent" onclick="manualSeedNext()" id="seed-next-btn" style="display:none">대진 편성</button>
       </div>
       <div id="bracket-view"></div>
     </div>
@@ -597,6 +641,30 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 <div id="sync-badge" class="sync-badge"></div>
 
 <!-- MODALS -->
+<!-- 중계자료 MODAL -->
+<div id="modal-broadcast" class="moverlay hidden" onclick="if(event.target===this)closeBroadcast()">
+  <div class="mbox" style="max-width:680px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;position:sticky;top:0;background:var(--bg2);padding-bottom:12px;border-bottom:1px solid var(--line);z-index:10">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">BROADCAST</div>
+        <div style="font-size:16px;font-weight:500" id="bc-title">중계 자료</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="bc-game-sel" onchange="updateBcRoundSel(true);renderBroadcast()" style="width:auto;padding:5px 10px;font-size:12px"></select>
+        <select id="bc-round-sel" onchange="renderBroadcast()" style="width:auto;padding:5px 10px;font-size:12px"></select>
+        <button class="btn btn-sm" onclick="closeBroadcast()">닫기</button>
+      </div>
+    </div>
+    <!-- ① 대진 분석 -->
+    <div id="bc-matchups"></div>
+    <!-- ② 팀별 진출 현황 -->
+    <div style="margin-top:18px">
+      <div class="sec-label" style="margin-bottom:10px">팀별 라운드 진출 현황</div>
+      <div id="bc-team-status"></div>
+    </div>
+  </div>
+</div>
+
 <div id="modal-rules" class="moverlay hidden" onclick="if(event.target===this)closeRules()">
   <div class="mbox" style="max-width:520px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -647,6 +715,16 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
         </div>
       </div>
 
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin:12px 0 6px">가치 평점</div>
+      <p style="margin-bottom:6px">선수의 종합 경쟁력 지표로, 아래 공식으로 계산됩니다.</p>
+      <div style="background:var(--bg3);border-radius:var(--r);padding:10px 14px;font-family:'DM Mono',monospace;font-size:12px;margin-bottom:6px">
+        <div style="color:var(--accent);margin-bottom:4px">가치 평점 = log₁₀(승점) + 내 평균점수 ÷ 전체평균점수의평균</div>
+        <div style="color:var(--text3);font-size:11px">· log₁₀ = 상용로그 (밑이 10인 로그)</div>
+        <div style="color:var(--text3);font-size:11px">· 전체평균점수의평균 = 전체 선수 평균점수의 합 ÷ 전체 선수 수</div>
+        <div style="color:var(--text3);font-size:11px">· 소수점 넷째 자리까지 표기</div>
+      </div>
+      <p style="margin-bottom:4px">팀 가치 평점 = 팀 소속 전체 선수의 가치 평점 합산</p>
+
       <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin:12px 0 6px">시즌 운영</div>
       <p style="margin-bottom:4px">• 총 <b style="color:var(--text)">25경기</b> 진행.</p>
       <p style="margin-bottom:4px">• 승점 상위 8명이 플레이오프 진출.</p>
@@ -688,55 +766,62 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 </div>
 
 <!-- Firebase SDK -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+<!-- Firebase SDK (compat - 일반 스크립트로 동기 로드) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+(function(){
+  const firebaseConfig = {
+    apiKey: "AIzaSyAyYwqEpHbJTAtHxjBrHdrt-CURS4eDgYA",
+    authDomain: "lr-2026-edd00.firebaseapp.com",
+    databaseURL: "https://lr-2026-edd00-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "lr-2026-edd00",
+    storageBucket: "lr-2026-edd00.firebasestorage.app",
+    messagingSenderId: "431709705453",
+    appId: "1:431709705453:web:bfa85561b71742f01be8e4",
+    measurementId: "G-2ZP8Z4HZDK"
+  };
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAyYwqEpHbJTAtHxjBrHdrt-CURS4eDgYA",
-  authDomain: "lr-2026-edd00.firebaseapp.com",
-  databaseURL: "https://lr-2026-edd00-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "lr-2026-edd00",
-  storageBucket: "lr-2026-edd00.firebasestorage.app",
-  messagingSenderId: "431709705453",
-  appId: "1:431709705453:web:4ca1ddf52469fe181be8e4",
-  measurementId: "G-BRZF6WPED4"
-};
+  firebase.initializeApp(firebaseConfig);
+  const _db = firebase.database();
+  const _dbRef = _db.ref('lr2026');
+  const _connRef = _db.ref('.info/connected');
 
-const _fbApp = initializeApp(firebaseConfig);
-const _db = getDatabase(_fbApp);
-const _dbRef = ref(_db, 'lr2026');
+  window.connectFirebase = function() {
+    // 연결 상태 감지 (데이터 유무와 무관하게 연결 여부 표시)
+    _connRef.on('value', (snap) => {
+      const dot = document.getElementById('fb-status');
+      if (!dot) return;
+      dot.style.background = snap.val() === true ? '#4caf7d' : '#ff5c5c';
+    });
 
-// Firebase → 앱 실시간 수신
-// 다른 기기에서 데이터가 바뀌면 자동으로 반영
-onValue(_dbRef, (snapshot) => {
-  // 연결 성공 → 초록 점
-  const dot = document.getElementById('fb-status');
-  if(dot) dot.style.background = '#4caf7d';
+    // 데이터 수신
+    _dbRef.on('value', (snapshot) => {
+      const remote = snapshot.val();
+      if (!remote) return;
 
-  const remote = snapshot.val();
-  if (!remote) return;
-  // 현재 로컬보다 remote가 더 최신인지 확인 (updatedAt 기준)
-  if (!S.updatedAt || (remote.updatedAt && remote.updatedAt > S.updatedAt)) {
-    Object.assign(S, remote);
-    repairBracket();
-    localStorage.setItem('lr2026', JSON.stringify(S));
-    if (S.init) refreshAll();
-    showSyncBadge('🔄 동기화됨');
-  }
-}, (error) => {
-  // 연결 실패 → 빨간 점
-  const dot = document.getElementById('fb-status');
-  if(dot) dot.style.background = '#ff5c5c';
-  console.error('Firebase 수신 오류:', error);
-});
+      const localS = window.S;
+      if (!localS) return;
 
-// Firebase에 저장하는 함수 (기존 save()에서 호출됨)
-window._fbSave = function(data) {
-  set(_dbRef, data).catch(e => console.error('Firebase 저장 실패:', e));
-};
+      if (!localS.updatedAt || (remote.updatedAt && remote.updatedAt > localS.updatedAt)) {
+        Object.keys(localS).forEach(k => { delete localS[k]; });
+        Object.keys(remote).forEach(k => { localS[k] = remote[k]; });
+        if (typeof window.repairBracket === 'function') window.repairBracket();
+        try { localStorage.setItem('lr2026', JSON.stringify(localS)); } catch(e) {}
+        if (localS.init && typeof window.refreshAll === 'function') window.refreshAll();
+        if (typeof window.showSyncBadge === 'function') window.showSyncBadge('🔄 동기화됨');
+      }
+    }, (error) => {
+      const dot = document.getElementById('fb-status');
+      if (dot) dot.style.background = '#ff5c5c';
+      console.error('Firebase 오류:', error);
+    });
 
-console.log('Firebase 연결 완료');
+    window._fbSave = function(data) {
+      _dbRef.set(data).catch(e => console.error('Firebase 저장 실패:', e));
+    };
+  };
+})();
 </script>
 
 <script>
@@ -757,6 +842,8 @@ function avcTeam(p,i){const tc=teamColor(p.team||'');return tc||{bg:AB[i%AB.leng
 
 // ─── STATE ───
 let S={init:false,players:[],matches:[],bracket:[]};
+// Firebase module 브릿지용 window 노출
+window.S = S;
 let MS={};
 let pSortKey='pts',pSortDir=-1;
 let tSortKey='totalPts',tSortDir=-1;
@@ -764,7 +851,17 @@ let matchResetMode=false;
 let matchInputMode=false;
 let _riMatchId=null,_riGi=null;
 
-function load(){try{const d=localStorage.getItem('lr2026');if(d)S=JSON.parse(d);}catch(e){}}
+function load(){
+  try{
+    const d=localStorage.getItem('lr2026');
+    if(d){
+      const parsed=JSON.parse(d);
+      // S 참조를 유지하면서 내용만 교체 (window.S 참조 보존)
+      Object.keys(S).forEach(k=>{delete S[k];});
+      Object.keys(parsed).forEach(k=>{S[k]=parsed[k];});
+    }
+  }catch(e){}
+}
 function repairBracket(){
   // Fix: if m.done=true but no matching S.matches record exists, reset done flag
   if(!S.bracket||!S.matches)return;
@@ -781,6 +878,7 @@ function save(){
   if(typeof window._fbSave === 'function') window._fbSave(S);
 }
 load();
+window.S = S; // load() 후 S가 새 객체로 교체됐을 수 있으므로 재동기화
 
 // ─── HELPERS ───
 function ini(n){const p=(n||'').trim().split(' ');return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():(n||'??').slice(0,2).toUpperCase();}
@@ -790,6 +888,7 @@ let _uidCounter=0;
 function uid(){return 'x'+Date.now()+'_'+(++_uidCounter)+'_'+Math.floor(Math.random()*99999);}
 function sp(id){return S.players.find(p=>p.id===id);}
 function fmt(v){return v==null?'0':(v%1===0?v.toString():v.toFixed(1));}
+function fmtVR(v){return(v==null?0:v).toFixed(4);}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
 // ─── PLAYER STATS ───
@@ -812,30 +911,63 @@ function pStats(id){
   const avgScore=g>0?Math.round(cumScore/g):0;
   const gamePts=wins*0.5+draws*0.25;
   const pts=parseFloat((sPts+gamePts).toFixed(2));
-  // 가치 평점: (승점+평균점수) / 진행된 경기 수(고유 gameNum 수)
+  // 가치 평점: log(승점) + 평균점수/전체평균점수, 소수점 4자리
   const uniqueGames=new Set(done.map(m=>m.gameNum)).size;
-  const valueRating=uniqueGames>0?parseFloat(((pts+avgScore)/uniqueGames).toFixed(1)):0;
+  // 전체 평균점수는 호출 시 전달; 없으면 자체 avgScore 사용(fallback)
+  const valueRating=0; // 후처리로 계산
   return{g,wins,draws,losses,cumScore,avgScore,pts,uniqueGames,valueRating};
+}
+
+// ─── 가치 평점 계산 ───
+// 공식: log(승점) + (평균점수) / (전체 평균점수의 평균)
+// 전체 평균점수의 평균 = 모든 선수 avgScore의 평균
+function calcAllValueRatings(){
+  if(!S.players.length) return {};
+  // 1차: 기본 스탯 수집
+  const rawStats=S.players.map(p=>pStats(p.id));
+  // 전체 평균점수의 평균 계산
+  const hasData=rawStats.filter(s=>s.g>0);
+  const globalAvgScore=hasData.length>0
+    ? hasData.reduce((a,s)=>a+s.avgScore,0)/hasData.length
+    : 1;
+  // 2차: 가치 평점 계산
+  const result={};
+  S.players.forEach((p,i)=>{
+    const s=rawStats[i];
+    let vr=0;
+    if(s.pts>0&&s.g>0&&globalAvgScore>0){
+      vr=Math.log10(s.pts)+(s.avgScore/globalAvgScore);
+    }
+    result[p.id]=parseFloat(vr.toFixed(4));
+  });
+  return result;
+}
+
+// pStats에 valueRating 주입
+function pStatsWithVR(id, vrMap){
+  const s=pStats(id);
+  s.valueRating=vrMap&&vrMap[id]!=null?vrMap[id]:0;
+  return s;
 }
 
 // ─── TEAM STATS ───
 function getTeams(){
+  const vrMap=calcAllValueRatings();
   const map={};
   S.players.forEach(p=>{const t=p.team||'팀 없음';if(!map[t])map[t]={name:t,players:[]};map[t].players.push(p);});
   return Object.values(map).map(t=>{
-    const st=t.players.map(p=>pStats(p.id));
+    const st=t.players.map(p=>pStatsWithVR(p.id,vrMap));
     const totalPts=parseFloat(st.reduce((a,s)=>a+s.pts,0).toFixed(2));
     const totalScore=st.reduce((a,s)=>a+s.cumScore,0);
-    const totalGames=st.reduce((a,s)=>a+s.g,0); // W+D+L 합
+    const totalGames=st.reduce((a,s)=>a+s.g,0);
     const totalWins=st.reduce((a,s)=>a+s.wins,0);
     const totalDraws=st.reduce((a,s)=>a+s.draws,0);
     const totalLosses=st.reduce((a,s)=>a+s.losses,0);
     const avgScore=totalGames>0?Math.round(totalScore/totalGames):0;
-    // 승률: 팀 승리 횟수 / 팀 경기 횟수(W+D+L)
     const winRate=totalGames>0?parseFloat((totalWins/totalGames*100).toFixed(1)):0;
-    // 팀 가치 평점: (팀 승점합 + 팀 평균점수) / 고유 경기 수
+    // 수정 8: 팀 가치 평점 = 팀 선수들의 가치 평점 합
+    const teamValueRating=parseFloat(st.reduce((a,s)=>a+s.valueRating,0).toFixed(4));
     const uniqueGames=st.length>0?Math.max(...st.map(s=>s.uniqueGames)):0;
-    const teamValueRating=uniqueGames>0?parseFloat(((totalPts+avgScore)/uniqueGames).toFixed(1)):0;
     return{...t,st,totalPts,totalScore,totalGames,totalWins,totalDraws,totalLosses,avgScore,winRate,teamValueRating,uniqueGames};
   });
 }
@@ -1008,12 +1140,10 @@ function updateMatchStats(){
 
 function showView(v){
   ['view-setup','view-main','view-match','view-result','view-tb'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==v));
-  ['modal-rules','modal-settings','modal-add','modal-player','modal-team-sel','modal-result-input'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
+  ['modal-rules','modal-settings','modal-add','modal-player','modal-team-sel','modal-result-input','modal-broadcast'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
 }
 function showM(id){document.getElementById(id).classList.remove('hidden');}
 function hideM(id){document.getElementById(id).classList.add('hidden');}
-
-window.onload=()=>{repairBracket();if(S.init){showView('view-main');refreshAll();}else{showView('view-setup');renderSetupList();}};
 
 function showSyncBadge(msg){
   const el=document.getElementById('sync-badge');
@@ -1023,6 +1153,20 @@ function showSyncBadge(msg){
   clearTimeout(el._t);
   el._t=setTimeout(()=>el.classList.remove('show'),2500);
 }
+// Firebase 브릿지 window 노출 (window.onload 전에 등록)
+window.repairBracket = repairBracket;
+window.refreshAll = () => refreshAll();
+window.showSyncBadge = showSyncBadge;
+
+window.onload=()=>{
+  window.S=S;
+  repairBracket();
+  if(S.init){showView('view-main');refreshAll();}
+  else{showView('view-setup');renderSetupList();}
+  // Firebase 모듈이 로드됐으면 연결, 아직이면 준비될 때까지 대기
+  if(typeof window.connectFirebase==='function')window.connectFirebase();
+  else{const t=setInterval(()=>{if(typeof window.connectFirebase==='function'){window.connectFirebase();clearInterval(t);}},50);}
+};
 
 // ─── SETUP ───
 let setupPs=[];
@@ -1073,7 +1217,7 @@ function gotoTab(name,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');
-  if(name==='standings')refreshStandings();
+  if(name==='standings'){renderMatchStatusBar();refreshStandings();}
   if(name==='schedule')renderBracket();
   if(name==='history')renderHistoryTab();
   if(name==='playoff')renderPlayoff();
@@ -1096,9 +1240,7 @@ function switchInner(name,btn){
 
 // ─── REFRESH ───
 function refreshAll(){
-  document.getElementById('st-games').textContent=S.matches.filter(m=>m.done).length;
-  document.getElementById('st-players').textContent=S.players.length;
-  document.getElementById('st-teams').textContent=new Set(S.players.map(p=>p.team||'팀 없음')).size;
+  renderMatchStatusBar();
   refreshStandings();renderBracket();renderHistoryTab();renderPlayers();refreshMSelects();
   if(document.getElementById('tab-playoff')&&document.getElementById('tab-playoff').classList.contains('active'))renderPlayoff();
 }
@@ -1111,7 +1253,10 @@ function refreshStandings(){
 
 // ─── SORT ───
 function setPSort(key,chipEl){
-  if(pSortKey===key)pSortDir*=-1;else{pSortKey=key;pSortDir=-1;}
+  // 기본 정렬 방향: 패배수는 오름차순(낮은 순=1위), 나머지는 내림차순(높은 순=1위)
+  const defaultDir=key==='losses'?1:-1;
+  if(pSortKey===key)pSortDir*=-1;
+  else{pSortKey=key;pSortDir=defaultDir;}
   if(chipEl){
     document.querySelectorAll('#pchips .chip').forEach(c=>{c.classList.remove('on');c.textContent=c.textContent.replace(/ [↓↑]/,'');});
     chipEl.classList.add('on');chipEl.textContent=chipEl.textContent+(pSortDir===-1?' ↓':' ↑');
@@ -1130,7 +1275,8 @@ function setTSort(key,chipEl){
 
 // ─── PLAYER RANK (with tied ranks) ───
 function renderPRank(){
-  const rows=S.players.map((p,oi)=>({p,oi,s:pStats(p.id)}));
+  const _vrMapPR=calcAllValueRatings();
+  const rows=S.players.map((p,oi)=>({p,oi,s:pStatsWithVR(p.id,_vrMapPR)}));
   rows.sort((a,b)=>pSortDir*(b.s[pSortKey]-a.s[pSortKey]));
   // assign tied ranks
   const ranked=assignRanks(rows,r=>r.s[pSortKey]);
@@ -1152,7 +1298,7 @@ function renderPRank(){
       <td class="n" style="color:${pSortKey==='pts'?(rank===1?'var(--accent)':'var(--text)'):'var(--text2)'};font-weight:${pSortKey==='pts'?'700':'500'}">${fmt(s.pts)}</td>
       <td class="n" style="color:${pSortKey==='cumScore'?(rank===1?'var(--accent)':'var(--text)'):'var(--text2)'};font-weight:${pSortKey==='cumScore'?'700':'500'}">${s.cumScore}</td>
       <td class="n" style="color:${pSortKey==='avgScore'?(rank===1?'var(--accent)':'var(--text)'):'var(--text2)'};font-weight:${pSortKey==='avgScore'?'700':'500'}">${s.avgScore}</td>
-      <td class="n" style="color:${pSortKey==='valueRating'?(rank===1?'var(--accent)':'var(--text)'):'var(--text2)'};font-weight:${pSortKey==='valueRating'?'700':'500'}">${s.valueRating}</td>
+      <td class="n" style="color:${pSortKey==='valueRating'?(rank===1?'var(--accent)':'var(--text)'):'var(--text2)'};font-weight:${pSortKey==='valueRating'?'700':'500'}">${fmtVR(s.valueRating)}</td>
       <td class="c"><span class="w" style="${pSortKey==='wins'?'font-weight:700':''}${pSortKey==='wins'&&rank===1?';color:var(--accent);border-color:rgba(212,240,76,.4)':''}">${s.wins}</span></td>
       <td class="c"><span class="d">${s.draws}</span></td>
       <td class="c"><span class="l" style="${pSortKey==='losses'?'font-weight:700':''}${pSortKey==='losses'&&rank===1?';color:var(--accent);border-color:rgba(212,240,76,.4)':''}">${s.losses}</span></td>
@@ -1277,7 +1423,7 @@ function renderTRank(){
       <td class="n" style="color:${tSortKey==='totalPts'?(rank===1?'var(--accent)':'var(--text)'):'var(--text2)'};font-weight:${tSortKey==='totalPts'?'700':'500'}">${fmt(t.totalPts)}</td>
       <td class="n" style="color:${tSortKey==='avgScore'?(rank===1?'var(--accent)':'var(--text)'):'var(--text2)'};font-weight:${tSortKey==='avgScore'?'700':'500'}">${t.avgScore}</td>
       <td class="n" style="color:${tSortKey==='winRate'?(rank===1?'var(--accent)':'var(--text)'):'var(--text2)'};font-weight:${tSortKey==='winRate'?'700':'500'}">${t.winRate}%</td>
-      <td class="n" style="color:${tSortKey==='teamValueRating'?(rank===1?'var(--accent)':'var(--text)'):'var(--text2)'};font-weight:${tSortKey==='teamValueRating'?'700':'500'}">${t.teamValueRating}</td>
+      <td class="n" style="color:${tSortKey==='teamValueRating'?(rank===1?'var(--accent)':'var(--text)'):'var(--text2)'};font-weight:${tSortKey==='teamValueRating'?'700':'500'}">${fmtVR(t.teamValueRating)}</td>
       <td class="n" style="color:var(--text2)">${t.totalGames}</td>
       <td class="c"><span class="w" style="${tSortKey==='totalWins'?'font-weight:700':''}${tSortKey==='totalWins'&&rank===1?';color:var(--accent);border-color:rgba(212,240,76,.4)':''}">${t.totalWins}</span></td>
       <td class="c"><span class="l">${t.totalLosses}</span></td>
@@ -1317,7 +1463,7 @@ function renderTRank(){
                 <td style="text-align:center;padding:5px 4px"><div class="wdl" style="justify-content:center"><span class="w">${s.wins}</span><span class="d">${s.draws}</span><span class="l">${s.losses}</span></div></td>
                 <td style="text-align:right;padding:5px 4px;font-family:'DM Mono',monospace;color:var(--accent)">${fmt(s.pts)}pt</td>
                 <td style="text-align:right;padding:5px 4px;font-family:'DM Mono',monospace;color:var(--text2)">${s.avgScore}</td>
-                <td style="text-align:right;padding:5px 4px;font-family:'DM Mono',monospace;color:var(--text2)">${s.valueRating}</td>
+                <td style="text-align:right;padding:5px 4px;font-family:'DM Mono',monospace;color:var(--text2)">${fmtVR(s.valueRating)}</td>
               </tr>`;
             }).join('')}
             </tbody>
@@ -1333,9 +1479,107 @@ function renderTRank(){
 }
 function toggleTE(id){const el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'table-row':'none';}
 
+// ─── MATCH STATUS BAR ───
+function renderMatchStatusBar(){
+  const el=document.getElementById('match-status-bar');
+  if(!el)return;
+  if(!S.bracket||!S.bracket.length||!S.players||!S.players.length){
+    el.innerHTML='';el.style.display='none';return;
+  }
+  el.style.display='block';
+
+  // 현재 경기: seeded됐고 아직 완료 안 된 가장 앞의 게임
+  let currentBg=null;
+  for(let i=0;i<S.bracket.length;i++){
+    const bg=S.bracket[i];
+    if(!bg.seeded)break;
+    currentBg=bg;
+    if(!isGDone(bg))break;
+  }
+
+  let leftMain='<span class="msbar-none">아직 시작 전</span>';
+  let leftSub='';
+  let rightMain='<span class="msbar-none">—</span>';
+  let rightSub='';
+
+  if(currentBg){
+    const gn=currentBg.gameNum;
+
+    // 아직 완료 안 된 첫 번째 라운드·매치 찾기
+    let pendingRound=null,pendingMatch=null;
+    for(const round of currentBg.rounds){
+      const m=round.matches.find(m=>!m.done&&m.p1id&&m.p2id);
+      if(m){pendingRound=round;pendingMatch=m;break;}
+    }
+
+    if(pendingRound&&pendingMatch){
+      // 현재 진행 중
+      const done=pendingRound.matches.filter(m=>m.done).length;
+      const total=pendingRound.matches.length;
+      leftMain=`<span class="msbar-game">${gn}</span><span style="font-size:14px">${pendingRound.roundType}</span><span style="font-size:11px;color:var(--text3)">진행 중</span>`;
+      leftSub=`${done} / ${total} 경기 완료`;
+
+      const p1=sp(pendingMatch.p1id),p2=sp(pendingMatch.p2id);
+      const p1n=p1?p1.name:'?',p2n=p2?p2.name:'?';
+      const p1t=p1?p1.team||'':'',p2t=p2?p2.team||'':'';
+      rightMain=`
+        <span style="font-weight:500">${p1n}</span>${p1t?`<span class="msbar-team">${p1t}</span>`:''}
+        <span class="msbar-vs">vs</span>
+        <span style="font-weight:500">${p2n}</span>${p2t?`<span class="msbar-team">${p2t}</span>`:''}`;
+      rightSub='다음 경기 시작 대기';
+
+    } else if(isGDone(currentBg)){
+      // 현재 경기 완료 → 다음 경기 안내
+      const recCount=S.matches.filter(m=>m.done&&m.gameNum===gn).length;
+      leftMain=`<span class="msbar-game">${gn}</span><span style="color:var(--green);font-size:14px;font-weight:500">완료 ✓</span>`;
+      leftSub=`총 ${recCount}경기 기록됨`;
+
+      const gi=S.bracket.indexOf(currentBg);
+      const nextBg=gi+1<S.bracket.length?S.bracket[gi+1]:null;
+      if(nextBg&&nextBg.seeded){
+        const fm=nextBg.rounds[0].matches.find(m=>m.p1id&&m.p2id&&!m.done);
+        if(fm){
+          const p1=sp(fm.p1id),p2=sp(fm.p2id);
+          const p1t=p1?p1.team||'':'',p2t=p2?p2.team||'':'';
+          rightMain=`
+            <span class="msbar-game" style="font-size:11px">${nextBg.gameNum}</span>
+            <span style="font-weight:500">${p1?p1.name:'?'}</span>${p1t?`<span class="msbar-team">${p1t}</span>`:''}
+            <span class="msbar-vs">vs</span>
+            <span style="font-weight:500">${p2?p2.name:'?'}</span>${p2t?`<span class="msbar-team">${p2t}</span>`:''}`;
+          rightSub=`${nextBg.gameNum} 예선전 첫 대진`;
+        } else {
+          rightMain=`<span class="msbar-none">${nextBg.gameNum} 대진 편성 대기</span>`;
+        }
+      } else {
+        rightMain=`<span class="msbar-none">다음 경기 미편성</span>`;
+      }
+    }
+  }
+
+  el.innerHTML=`<div class="msbar">
+    <div class="msbar-col">
+      <div class="msbar-lbl">현재 진행</div>
+      <div class="msbar-main">${leftMain}</div>
+      ${leftSub?`<div class="msbar-sub">${leftSub}</div>`:''}
+    </div>
+    <div class="msbar-col">
+      <div class="msbar-lbl">현재 대진</div>
+      <div class="msbar-main">${rightMain}</div>
+      ${rightSub?`<div class="msbar-sub">${rightSub}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function onGameFilterChange(){
+  document.getElementById('round-filter-sel').value='all';
+  renderBracket();
+}
+
 function renderBracket(){
   const el=document.getElementById('bracket-view');
   const filterVal=document.getElementById('game-filter-sel').value;
+  const roundSel=document.getElementById('round-filter-sel');
+  const roundFilter=roundSel?roundSel.value:'all';
   if(!S.bracket.length){el.innerHTML='<p style="color:var(--text3);font-size:13px">시즌을 먼저 시작하세요.</p>';return;}
   const toRender=filterVal==='all'?S.bracket:S.bracket.filter(bg=>bg.gameNum===filterVal);
   if(!toRender.length){el.innerHTML='<p style="color:var(--text3);font-size:13px">해당 경기 기록이 없습니다.</p>';return;}
@@ -1344,13 +1588,46 @@ function renderBracket(){
     const gi=S.bracket.indexOf(bg);
     html+=`<div class="gbk"><div class="gtitle"><span class="gtt">${bg.gameNum}</span>${isGDone(bg)?'<span class="tag tag-done">완료</span>':''}</div>`;
     bg.rounds.forEach(round=>{
+      if(roundFilter!=='all'&&round.roundType!==roundFilter)return;
       html+=`<div class="rsep">${round.roundType}</div>`;
       round.matches.forEach(m=>{html+=renderMC(m,gi);});
     });
     html+='</div><div class="gdiv"></div>';
   });
   el.innerHTML=html;
+
+  // 대진 편성 버튼: 이전 경기 결승 완료 + 다음 경기 미편성일 때 표시
+  const seedBtn=document.getElementById('seed-next-btn');
+  if(seedBtn){
+    let showSeedBtn=false;
+    for(let i=0;i<S.bracket.length-1;i++){
+      if(isGDone(S.bracket[i])&&!S.bracket[i+1].seeded){showSeedBtn=true;break;}
+    }
+    seedBtn.style.display=showSeedBtn?'':'none';
+  }
 }
+
+function manualSeedNext(){
+  // 결승 완료됐지만 다음 경기 미편성인 첫 번째 경기 찾기
+  for(let i=0;i<S.bracket.length-1;i++){
+    const bg=S.bracket[i];
+    const nextBg=S.bracket[i+1];
+    if(isGDone(bg)&&!nextBg.seeded){
+      // 시즌포인트 미배정이면 먼저 배정
+      const finalRound=bg.rounds[bg.rounds.length-1];
+      const finalDone=finalRound.matches.every(m=>m.done||(m.p1id==null&&m.p2id==null));
+      if(finalDone){
+        assignSeasonPts(bg);
+        seedNextGameIfReady(bg);
+        save();refreshAll();
+        alert(`${nextBg.gameNum} 대진이 편성되었습니다.`);
+        return;
+      }
+    }
+  }
+  alert('편성할 다음 경기가 없거나 이전 경기가 아직 완료되지 않았습니다.');
+}
+
 function isGDone(bg){return bg.rounds.every(r=>r.matches.every(m=>m.done||(!m.p1id&&!m.p2id)));}
 
 function renderMC(m,gi){
@@ -1716,6 +1993,320 @@ function renderPlayers(){
 function delPlayer(id){if(!confirm('삭제합니까?'))return;S.players=S.players.filter(p=>p.id!==id);save();refreshAll();}
 
 // ─── MODALS ───
+// ─── BROADCAST ───
+function openBroadcast(){
+  // 게임 셀렉터 구성
+  const gameSel=document.getElementById('bc-game-sel');
+  const roundSel=document.getElementById('bc-round-sel');
+  gameSel.innerHTML='';
+  S.bracket.filter(bg=>bg.seeded).forEach(bg=>{
+    const opt=document.createElement('option');
+    opt.value=bg.gameNum;opt.textContent=bg.gameNum;
+    gameSel.appendChild(opt);
+  });
+  // 현재 진행 중인 경기 기본 선택
+  let currentBg=null;
+  for(const bg of S.bracket){
+    if(!bg.seeded)break;
+    currentBg=bg;
+    if(!isGDone(bg))break;
+  }
+  if(currentBg) gameSel.value=currentBg.gameNum;
+  updateBcRoundSel(true);
+  renderBroadcast();
+  showM('modal-broadcast');
+}
+function closeBroadcast(){hideM('modal-broadcast');}
+
+function updateBcRoundSel(forceDefault=false){
+  const gameSel=document.getElementById('bc-game-sel');
+  const roundSel=document.getElementById('bc-round-sel');
+  const bg=S.bracket.find(b=>b.gameNum===gameSel.value);
+  if(!bg){roundSel.innerHTML='';return;}
+  const prevVal=roundSel.value; // 현재 선택된 값 기억
+  roundSel.innerHTML='';
+  // 편성된(p1id 또는 done) 라운드만
+  bg.rounds.forEach(r=>{
+    const hasMatch=r.matches.some(m=>m.p1id||m.done);
+    if(!hasMatch)return;
+    const opt=document.createElement('option');
+    opt.value=r.roundType;opt.textContent=r.roundType;
+    roundSel.appendChild(opt);
+  });
+  // forceDefault=true이면 진행중 라운드로, 아니면 이전 선택 복원
+  if(!forceDefault&&prevVal){
+    const exists=[...roundSel.options].some(o=>o.value===prevVal);
+    if(exists){roundSel.value=prevVal;return;}
+  }
+  // 기본: 현재 진행 중인 라운드
+  const pendingRound=bg.rounds.find(r=>r.matches.some(m=>!m.done&&m.p1id&&m.p2id));
+  if(pendingRound)roundSel.value=pendingRound.roundType;
+}
+
+function renderBroadcast(){
+  // renderBroadcast는 선택 값을 유지하면서 내용만 갱신
+  updateBcRoundSel(false);
+  const gameSel=document.getElementById('bc-game-sel');
+  const roundSel=document.getElementById('bc-round-sel');
+  const gn=gameSel.value;
+  const rt=roundSel.value;
+  const bg=S.bracket.find(b=>b.gameNum===gn);
+  if(!bg){document.getElementById('bc-matchups').innerHTML='';return;}
+  const round=bg.rounds.find(r=>r.roundType===rt);
+  if(!round){document.getElementById('bc-matchups').innerHTML='';return;}
+  document.getElementById('bc-title').textContent=`${gn} · ${rt} 중계 자료`;
+
+  // 전체 선수 순위 계산 (각 항목별)
+  const _vrMapBC=calcAllValueRatings();
+  const allStats=S.players.map(p=>({p,s:pStatsWithVR(p.id,_vrMapBC)}));
+  // higherIsBetter: true=높을수록 좋음(승점 등), false=낮을수록 좋음(패배수)
+  function getRank(pid,key,higherIsBetter=true){
+    const sorted=[...allStats].sort((a,b)=>higherIsBetter?b.s[key]-a.s[key]:a.s[key]-b.s[key]);
+    let rank=1;
+    for(let i=0;i<sorted.length;i++){
+      if(i>0&&sorted[i].s[key]!==sorted[i-1].s[key])rank=i+1;
+      if(sorted[i].p.id===pid)return rank;
+    }
+    return sorted.length;
+  }
+  function rankClass(r){return r===1?'r1':r===2?'r2':r===3?'r3':'';}
+  function rankStr(r){return `(${r}위)`;}
+
+  // 대진 분석 렌더
+  let html='<div class="sec-label" style="margin-bottom:10px">대진 분석</div>';
+  round.matches.forEach((m,idx)=>{
+    if(!m.p1id&&!m.p2id)return;
+    const p1=sp(m.p1id),p2=sp(m.p2id);
+    if(!p1&&!p2)return;
+    const p1n=p1?p1.name:'TBD',p2n=p2?p2.name:'TBD';
+    const p1t=p1?p1.team||'':'',p2t=p2?p2.team||'':'';
+    const s1=p1?pStats(p1.id):null,s2=p2?pStats(p2.id):null;
+    const isDone=m.done;
+    const rec=isDone?S.matches.find(x=>x.bracketMatchId&&x.bracketMatchId===m.id):null;
+
+    // 승리 확률 계산 (pStats 기반 가중 점수)
+    let p1WinPct=50,p2WinPct=50;
+    if(s1&&s2){
+      const score1=(s1.pts*3)+(s1.avgScore*0.01)+(s1.wins*2)+(s1.valueRating*0.5);
+      const score2=(s2.pts*3)+(s2.avgScore*0.01)+(s2.wins*2)+(s2.valueRating*0.5);
+      const total=score1+score2;
+      if(total>0){p1WinPct=Math.round(score1/total*100);p2WinPct=100-p1WinPct;}
+    }
+    const p1IsHighSeed=(m.p1prevScore||0)>=(m.p2prevScore||0);
+    const elim=['16강전','8강전','준결승','결승'].includes(rt);
+
+    const tc1=p1?avcTeam(p1,S.players.indexOf(p1)):{bg:'var(--bg4)',tx:'var(--text2)'};
+    const tc2=p2?avcTeam(p2,S.players.indexOf(p2)):{bg:'var(--bg4)',tx:'var(--text2)'};
+
+    const statusBadge=isDone?`<span class="tag tag-done" style="font-size:10px">완료</span>`:
+      (!m.p1id||!m.p2id)?`<span class="tag tag-done" style="font-size:10px">미정</span>`:
+      `<span style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace">대기 중</span>`;
+
+    html+=`<div class="bc-matchup">
+      <div class="bc-match-header" onclick="toggleBcMatch('bcm${idx}')">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">${idx+1}경기</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="avatar" style="background:${tc1.bg};color:${tc1.tx};width:22px;height:22px;font-size:8px">${p1?ini(p1.name):'?'}</div>
+            <span style="font-size:13px;font-weight:500">${p1n}</span>
+            ${p1t?`<span style="font-size:10px;color:var(--text3)">${p1t}</span>`:''}
+          </div>
+          <span style="color:var(--text3);font-size:11px">vs</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="avatar" style="background:${tc2.bg};color:${tc2.tx};width:22px;height:22px;font-size:8px">${p2?ini(p2.name):'?'}</div>
+            <span style="font-size:13px;font-weight:500">${p2n}</span>
+            ${p2t?`<span style="font-size:10px;color:var(--text3)">${p2t}</span>`:''}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          ${statusBadge}
+          ${isDone&&rec?`<span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:${rec.winnerId===m.p1id?'var(--green)':'var(--red)'}">${rec.p1final}</span>
+          <span style="color:var(--text3);font-size:11px">vs</span>
+          <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:${rec.winnerId===m.p2id?'var(--green)':'var(--red)'}">${rec.p2final}</span>`:''}
+          <span style="color:var(--text3);font-size:14px;margin-left:4px">▾</span>
+        </div>
+      </div>
+      <div class="bc-match-body" id="bcm${idx}">
+        <!-- 승리 확률 바 -->
+        <div style="margin-bottom:14px">
+          <div class="bc-win-names">
+            <div style="display:flex;align-items:center;gap:5px">
+              <div class="avatar" style="background:${tc1.bg};color:${tc1.tx};width:20px;height:20px;font-size:8px">${p1?ini(p1.name):'?'}</div>
+              <span style="font-weight:500">${p1n}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px">
+              <span style="font-weight:500">${p2n}</span>
+              <div class="avatar" style="background:${tc2.bg};color:${tc2.tx};width:20px;height:20px;font-size:8px">${p2?ini(p2.name):'?'}</div>
+            </div>
+          </div>
+          <div class="bc-win-bar">
+            <div class="bc-win-seg" style="width:${p1WinPct}%;min-width:${p1WinPct>5?'36px':'0'};background:${p1WinPct>=p2WinPct?'var(--blue)':'rgba(255,92,92,.75)'};justify-content:flex-start;border-radius:var(--r) 0 0 var(--r)">${p1WinPct>8?p1WinPct+'%':''}</div>
+            <div class="bc-win-seg" style="width:${p2WinPct}%;min-width:${p2WinPct>5?'36px':'0'};background:${p2WinPct>p1WinPct?'var(--blue)':'rgba(255,92,92,.75)'};justify-content:flex-end;border-radius:0 var(--r) var(--r) 0">${p2WinPct>8?p2WinPct+'%':''}</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:0 2px">
+            <span style="color:${p1WinPct>=p2WinPct?'var(--blue)':'rgba(255,92,92,.9)'};font-weight:600">${p1WinPct}% 승리 예측</span>
+            <span style="color:${p2WinPct>p1WinPct?'var(--blue)':'rgba(255,92,92,.9)'};font-weight:600">${p2WinPct}%</span>
+          </div>
+        </div>
+        <!-- 스탯 비교표 -->
+        ${s1&&s2?`
+        <table class="bc-stats-tbl">
+          <thead><tr>
+            <th style="text-align:right">${p1n}<br><span style="color:var(--text3);font-weight:400">${p1t}</span></th>
+            <th>항목</th>
+            <th style="text-align:left">${p2n}<br><span style="color:var(--text3);font-weight:400">${p2t}</span></th>
+          </tr></thead>
+          <tbody>
+            ${bcStatRow('승점',fmt(s1.pts),getRank(p1.id,'pts'),fmt(s2.pts),getRank(p2.id,'pts'),rankClass,rankStr)}
+            ${bcStatRow('누적 점수',s1.cumScore,getRank(p1.id,'cumScore'),s2.cumScore,getRank(p2.id,'cumScore'),rankClass,rankStr)}
+            ${bcStatRow('평균 점수',s1.avgScore,getRank(p1.id,'avgScore'),s2.avgScore,getRank(p2.id,'avgScore'),rankClass,rankStr)}
+            ${bcStatRow('가치 평점',fmtVR(s1.valueRating),getRank(p1.id,'valueRating'),fmtVR(s2.valueRating),getRank(p2.id,'valueRating'),rankClass,rankStr)}
+            ${bcStatRow('승리 수',s1.wins+'승',getRank(p1.id,'wins'),s2.wins+'승',getRank(p2.id,'wins'),rankClass,rankStr)}
+            ${bcStatRow('패배 수',s1.losses+'패',getRank(p1.id,'losses',false),s2.losses+'패',getRank(p2.id,'losses',false),rankClass,rankStr,false)}
+          </tbody>
+        </table>`:'<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">선수 정보 없음</div>'}
+      </div>
+    </div>`;
+  });
+  document.getElementById('bc-matchups').innerHTML=html;
+  renderBcTeamStatus(gn,rt);
+}
+
+function bcStatRow(label,v1,r1,v2,r2,rankClass,rankStr,higherIsBetter=true){
+  const rc1=rankClass(r1),rc2=rankClass(r2);
+  // higherIsBetter=true: 수치 높은 쪽 강조 / false: 수치 낮은 쪽 강조(패배수)
+  // 동률이면 둘 다 강조
+  const tied=(r1===r2);
+  let better1,better2;
+  if(tied){better1=true;better2=true;}
+  else if(higherIsBetter){better1=r1<r2;better2=r2<r1;}
+  else{better1=r1<r2;better2=r2<r1;} // 역순 순위라 r1 작은 게 좋음
+  return`<tr>
+    <td style="text-align:right">
+      <span style="font-weight:${better1?'700':'400'};color:${better1?'var(--accent)':'var(--text)'}">${v1}</span>
+      <span class="bc-rank ${rc1}">${rankStr(r1)}</span>
+    </td>
+    <td class="bc-stat-label" style="text-align:center;color:var(--text3);font-size:11px;font-family:'DM Mono',monospace">${label}</td>
+    <td style="text-align:left">
+      <span class="bc-rank ${rc2}">${rankStr(r2)}</span>
+      <span style="font-weight:${better2?'700':'400'};color:${better2?'var(--accent)':'var(--text)'}">${v2}</span>
+    </td>
+  </tr>`;
+}
+
+function toggleBcMatch(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.classList.toggle('open');
+}
+
+function renderBcTeamStatus(gn,rt){
+  const el=document.getElementById('bc-team-status');
+  if(!el)return;
+  const bg=S.bracket.find(b=>b.gameNum===gn);
+  if(!bg){el.innerHTML='';return;}
+  const roundOrder=['예선전','16강전','8강전','준결승','결승'];
+  const curRoundIdx=roundOrder.indexOf(rt);
+
+  // 팀별 그룹화
+  const teamMap={};
+  S.players.forEach(p=>{const t=p.team||'팀 없음';if(!teamMap[t])teamMap[t]=[];teamMap[t].push(p);});
+
+  let html='';
+  Object.entries(teamMap).forEach(([teamName,players])=>{
+    const tc=teamColor(teamName)||{bg:'var(--bg3)',tx:'var(--text2)'};
+    // 각 선수별 현재 상태
+    const statusCounts={};
+    const playerStatuses=players.map(p=>{
+      const st=getBcPlayerStatus(p.id,bg,curRoundIdx,roundOrder);
+      statusCounts[st.label]=(statusCounts[st.label]||0)+1;
+      return{p,st};
+    });
+    // 상태별 칩 색상
+    const chipStyle=(st)=>{
+      if(st.includes('우승'))return'background:var(--accent-bg);color:var(--accent);border:1px solid rgba(212,240,76,.3)';
+      if(st.includes('결승'))return'background:rgba(212,240,76,.08);color:var(--accent);border:1px solid rgba(212,240,76,.2)';
+      if(st.includes('4강'))return'background:var(--green-bg);color:var(--green);border:1px solid rgba(76,175,125,.3)';
+      if(st.includes('8강'))return'background:var(--green-bg);color:var(--green);border:1px solid rgba(76,175,125,.25)';
+      if(st.includes('16강'))return'background:var(--blue-bg);color:var(--blue);border:1px solid rgba(91,156,246,.25)';
+      if(st.includes('진행 전'))return'background:var(--bg4);color:var(--text3);border:1px solid var(--line)';
+      if(st.includes('탈락'))return'background:var(--red-bg);color:var(--red);border:1px solid rgba(255,92,92,.25)';
+      return'background:var(--bg4);color:var(--text3);border:1px solid var(--line)';
+    };
+    html+=`<div class="bc-team-card">
+      <div class="bc-team-card-header">
+        <div class="t-ava" style="background:${tc.bg};color:${tc.tx}">${tIni(teamName)}</div>
+        <span style="font-weight:500;font-size:14px">${teamName}</span>
+        <span style="font-size:11px;color:var(--text3);margin-left:4px">(${players.length}명)</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        ${Object.entries(statusCounts).map(([label,cnt])=>`<span class="bc-status-chip" style="${chipStyle(label)}">${label} ${cnt}명</span>`).join('')}
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="color:var(--text3)">
+          <th style="text-align:left;padding:4px 6px;font-weight:400;font-size:10px;font-family:'DM Mono',monospace">선수</th>
+          <th style="text-align:center;padding:4px 6px;font-weight:400;font-size:10px;font-family:'DM Mono',monospace">상태</th>
+          <th style="text-align:right;padding:4px 6px;font-weight:400;font-size:10px;font-family:'DM Mono',monospace">승점</th>
+          <th style="text-align:right;padding:4px 6px;font-weight:400;font-size:10px;font-family:'DM Mono',monospace">W-L</th>
+        </tr></thead>
+        <tbody>
+        ${playerStatuses.map(({p,st})=>{
+          const _vrMapBCTS=calcAllValueRatings();
+          const ps=pStatsWithVR(p.id,_vrMapBCTS);
+          const ptc=avcTeam(p,S.players.indexOf(p));
+          return`<tr style="border-top:1px solid var(--line)">
+            <td style="padding:5px 6px"><div style="display:flex;align-items:center;gap:6px">
+              <div class="avatar" style="background:${ptc.bg};color:${ptc.tx};width:20px;height:20px;font-size:8px">${ini(p.name)}</div>
+              <span>${p.name}</span>
+            </div></td>
+            <td style="text-align:center;padding:5px 6px">
+              <span style="font-size:10px;padding:2px 7px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:500;${chipStyle(st.label)}">${st.label}</span>
+            </td>
+            <td style="text-align:right;padding:5px 6px;font-family:'DM Mono',monospace;color:var(--accent)">${fmt(ps.pts)}</td>
+            <td style="text-align:right;padding:5px 6px;font-size:11px"><span style="color:var(--green)">${ps.wins}승</span> <span style="color:var(--red)">${ps.losses}패</span></td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+function getBcPlayerStatus(playerId,bg,curRoundIdx,roundOrder){
+  // 현재 경기에서의 선수 상태
+  const inGame=bg.rounds.some(r=>r.matches.some(m=>m.p1id===playerId||m.p2id===playerId));
+  if(!inGame)return{label:'경기 진행 전',color:'var(--text3)'};
+
+  let eliminated=false;
+  let highestPassed=-1; // 통과한 라운드 인덱스
+
+  for(let ri=0;ri<bg.rounds.length;ri++){
+    const round=bg.rounds[ri];
+    const match=round.matches.find(m=>m.p1id===playerId||m.p2id===playerId);
+    if(!match)break;
+    if(!match.done){
+      // 아직 안 함
+      if(ri===0)return{label:'경기 진행 전'};
+      // 이전 라운드 통과 후 대기
+      const nextLabel=roundOrder[ri];
+      return{label:nextLabel+' 진출'};
+    }
+    if(match.winnerId===playerId){
+      highestPassed=ri;
+      if(round.roundType==='결승')return{label:'우승 🏆'};
+    } else {
+      return{label:'탈락'};
+    }
+  }
+  if(highestPassed>=0){
+    const nextRound=roundOrder[highestPassed+1];
+    if(nextRound)return{label:nextRound+' 진출'};
+    return{label:'우승 🏆'};
+  }
+  return{label:'경기 진행 전'};
+}
+
 function openRules(){showM('modal-rules');}
 function closeRules(){hideM('modal-rules');}
 function openSettings(){showM('modal-settings');}
@@ -1979,7 +2570,8 @@ function openPModal(pid){
     <div style="font-size:12px;color:var(--text2)">${p.team||'팀 없음'} · ${p.age||'?'}세</div></div>
   </div>`;
   const done=S.matches.filter(m=>m.done&&(m.p1id===pid||m.p2id===pid));
-  const s=pStats(pid);
+  const _vrMapPM=calcAllValueRatings();
+  const s=pStatsWithVR(pid,_vrMapPM);
   // Group by gameNum for season pts
   const gameNums=[...new Set(done.map(m=>m.gameNum))].sort((a,b)=>parseInt(a)-parseInt(b));
   let ptsByGame={};
@@ -2046,13 +2638,14 @@ function closePModal(){hideM('modal-player');}
 function renderTop3Cards(){
   const el=document.getElementById('top3-cards-section');
   if(!el)return;
-  const rows=S.players.map((p,oi)=>({p,oi,s:pStats(p.id)}));
+  const _vrMap=calcAllValueRatings();
+  const rows=S.players.map((p,oi)=>({p,oi,s:pStatsWithVR(p.id,_vrMap)}));
   if(!rows.length){el.innerHTML='';return;}
   const keys=[
     {key:'pts',label:'승점',unit:'pt',fmt:v=>fmt(v)},
     {key:'cumScore',label:'누적 점수',unit:'점',fmt:v=>v},
     {key:'avgScore',label:'평균 점수',unit:'점',fmt:v=>v},
-    {key:'valueRating',label:'가치 평점',unit:'',fmt:v=>v},
+    {key:'valueRating',label:'가치 평점',unit:'',fmt:v=>fmtVR(v)},
     {key:'wins',label:'승리 수',unit:'승',fmt:v=>v},
   ];
   let html='<div class="top3-grid">';
