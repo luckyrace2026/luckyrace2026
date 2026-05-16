@@ -788,15 +788,23 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
   const _connRef = _db.ref('.info/connected');
 
   window.connectFirebase = function() {
-    // 연결 상태 감지 (데이터 유무와 무관하게 연결 여부 표시)
-    _connRef.on('value', (snap) => {
+    let connected = false;
+
+    // 연결 상태: .info/connected 감지
+    _db.ref('.info/connected').on('value', (snap) => {
       const dot = document.getElementById('fb-status');
       if (!dot) return;
-      dot.style.background = snap.val() === true ? '#4caf7d' : '#ff5c5c';
+      const isConn = snap.val() === true;
+      dot.style.background = isConn ? '#4caf7d' : '#ff5c5c';
+      connected = isConn;
     });
 
-    // 데이터 수신
+    // 데이터 수신 — 첫 수신 시에도 초록불 보장
     _dbRef.on('value', (snapshot) => {
+      // 초록불 보장 (DB에 데이터 없어도 연결은 됐으므로)
+      const dot = document.getElementById('fb-status');
+      if (dot && !connected) dot.style.background = '#4caf7d';
+
       const remote = snapshot.val();
       if (!remote) return;
 
@@ -1831,58 +1839,98 @@ function findBracketMatch(bmid){
 
 // ─── ASSIGN SEASON PTS after final ───
 // Collect all results for this gameNum bracket, rank by final score and assign SPTS
+// 결승 전 라운드 탈락 시 즉시 임시 순위 배정
+// 결승 완료 시 assignSeasonPts가 전체 재배정하므로 덮어씌워짐
+function assignPartialSeasonPts(bg, loserId, roundType){
+  const roundBaseRank={'예선전':17,'16강전':9,'8강전':5,'준결승':3};
+  const baseRank=roundBaseRank[roundType];
+  if(!baseRank) return;
+  // 같은 라운드 탈락자 수 세서 순위 계산
+  const sameLosers=S.matches.filter(m=>
+    m.gameNum===bg.gameNum&&m.done&&m.loserId&&
+    bg.rounds.find(r=>r.roundType===roundType&&r.matches.find(bm=>bm.id===m.bracketMatchId))
+  );
+  const loserScores=sameLosers.map(m=>({
+    id:m.loserId,
+    score:m.loserId===m.p1id?m.p1score:m.p2score
+  })).sort((a,b)=>b.score-a.score);
+
+  loserScores.forEach((l,i)=>{
+    let rank=baseRank+i;
+    if(i>0&&l.score===loserScores[i-1].score){
+      rank=baseRank+i-1;
+    }
+    // 이 탈락자의 모든 경기 기록에 순위 배정
+    S.matches.forEach(m=>{
+      if(m.gameNum!==bg.gameNum) return;
+      if(m.p1id===l.id&&m.p1spts==null) m.p1spts=rank;
+      if(m.p2id===l.id&&m.p2spts==null) m.p2spts=rank;
+    });
+  });
+}
+
 function assignSeasonPts(bg){
   const gn=bg.gameNum;
-  // collect all match results for this game, figure out placements
-  // We need to rank all participants
-  // Build placement map from bracket results
+  // 기존 임시 배정 초기화 후 전체 재배정
+  S.matches.forEach(m=>{
+    if(m.gameNum===gn){m.p1spts=null;m.p2spts=null;}
+  });
   const placements=buildPlacements(bg);
-  // placements: [{playerId, rank}]
-  // Now assign season pts to all matches of this game
   S.matches.forEach(m=>{
     if(m.gameNum!==gn) return;
     const p1place=placements.find(p=>p.id===m.p1id);
     const p2place=placements.find(p=>p.id===m.p2id);
-    if(p1place&&m.p1spts==null) m.p1spts=p1place.rank;
-    if(p2place&&m.p2spts==null) m.p2spts=p2place.rank;
+    if(p1place) m.p1spts=p1place.rank;
+    if(p2place) m.p2spts=p2place.rank;
   });
 }
 
 function buildPlacements(bg){
-  // Collect losers at each round with their final scores
   const placements=[];
   const roundOrder=['예선전','16강전','8강전','준결승','결승'];
+  // 라운드별 패자 수집
   const losersPerRound={};
   roundOrder.forEach(rt=>{losersPerRound[rt]=[];});
 
   bg.rounds.forEach(round=>{
     round.matches.forEach(m=>{
-      if(!m.done) return;
+      if(!m.done)return;
       const rec=S.matches.find(x=>x.bracketMatchId&&x.bracketMatchId===m.id);
-      if(!rec) return;
-      const loserId=rec.loserId;
-      const loserFinal=loserId===rec.p1id?rec.p1final:rec.p2final;
-      losersPerRound[round.roundType].push({id:loserId,finalScore:loserFinal});
-      // winner of final = rank 1
+      if(!rec)return;
+      // 결승 승자 → 1위
       if(round.roundType==='결승'){
-        placements.push({id:rec.winnerId,rank:1});
+        if(!placements.find(p=>p.id===rec.winnerId))
+          placements.push({id:rec.winnerId,rank:1});
       }
+      // 패자 수집 (원점수 기준)
+      const loserRawScore=rec.loserId===rec.p1id?rec.p1score:rec.p2score;
+      if(rec.loserId)
+        losersPerRound[round.roundType].push({id:rec.loserId,rawScore:loserRawScore});
     });
   });
 
-  // Rank losers within each round by finalScore desc
-  const roundRanks={'결승':2,'준결승':3,'8강전':5,'16강전':9,'예선전':17};
+  // 라운드별 기준 순위 (패자 중 1등이 받는 순위)
+  // 결승패자=2위, 준결승패자=3~4위, 8강패자=5~8위, 16강패자=9~16위, 예선패자=17~32위
+  const roundBaseRank={
+    '결승':2,'준결승':3,'8강전':5,'16강전':9,'예선전':17
+  };
+
   roundOrder.forEach(rt=>{
-    const losers=losersPerRound[rt].sort((a,b)=>b.finalScore-a.finalScore);
-    let baseRank=roundRanks[rt];
-    // handle ties: assign same rank
-    losers.forEach((l,i)=>{
-      let rank=baseRank;
-      if(i>0&&l.finalScore===losers[i-1].finalScore){rank=placements[placements.length-1].rank;}
-      placements.push({id:l.id,rank});
-      baseRank++;
-    });
+    const losers=[...losersPerRound[rt]].sort((a,b)=>b.rawScore-a.rawScore);
+    if(!losers.length)return;
+    let curRank=roundBaseRank[rt]||17;
+    for(let i=0;i<losers.length;i++){
+      // 동점이면 같은 순위
+      if(i>0&&losers[i].rawScore===losers[i-1].rawScore){
+        const prevPlacement=placements[placements.length-1];
+        placements.push({id:losers[i].id,rank:prevPlacement.rank});
+      } else {
+        placements.push({id:losers[i].id,rank:curRank});
+      }
+      curRank++;
+    }
   });
+
   return placements;
 }
 
@@ -2336,7 +2384,9 @@ function importData(input){
       if(typeof parsed!=='object'||!parsed.players){
         alert('올바른 Lucky Race 데이터 파일이 아닙니다.');input.value='';return;
       }
-      S=parsed;
+      // S 참조를 유지하면서 in-place로 교체 (call stack 방지)
+      Object.keys(S).forEach(k=>{delete S[k];});
+      Object.keys(parsed).forEach(k=>{S[k]=parsed[k];});
       save();
       closeSettings();
       if(S.init){showView('view-main');refreshAll();}
@@ -2855,9 +2905,16 @@ function confirmResult(){
   if(MS.bmid)updateBracket(MS.bmid,MS.win,MS.lose,MS.p1f,MS.p2f);
   if(MS.bmid){
     const info=findBracketMatch(MS.bmid);
-    if(info&&info.round.roundType==='결승'){
-      assignSeasonPts(info.bg);
-      seedNextGameIfReady(info.bg);
+    if(info){
+      const rt=info.round.roundType;
+      if(rt==='결승'){
+        // 결승 완료 → 전체 순위 즉시 배정
+        assignSeasonPts(info.bg);
+        seedNextGameIfReady(info.bg);
+      } else {
+        // 결승 전 라운드 → 탈락자에게 즉시 임시 순위 배정
+        assignPartialSeasonPts(info.bg, MS.lose, rt);
+      }
     }
   }
   // PO match result
