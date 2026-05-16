@@ -2538,10 +2538,14 @@ function confirmResultInput(){
       // Don't overwrite already-set slots (이후 대진 보존)
     }
   }
-  // If this was a final, assign season pts
-  if(fm.roundType==='결승'){
+  // 결승 여부에 따라 승점 배정 + 대진 편성
+  const finalRound=bg.rounds[bg.rounds.length-1];
+  const finalDone=finalRound.matches.every(m=>m.done);
+  if(finalDone){
     assignSeasonPts(bg);
     seedNextGameIfReady(bg);
+  } else if(loserId){
+    assignPartialSeasonPts(bg, loserId, fm.roundType);
   }
   save();closeResultInput();disableAllModes();refreshAll();
   alert(`결과 저장 완료: ${p1?p1.name:'P1'} ${p1f} vs ${p2?p2.name:'P2'} ${p2f} → ${sp(winnerId)?sp(winnerId).name:winnerId} 승리`);
@@ -2902,21 +2906,24 @@ function confirmResult(){
     done:true,p1spts:null,p2spts:null
   };
   S.matches.push(rec);
-  if(MS.bmid)updateBracket(MS.bmid,MS.win,MS.lose,MS.p1f,MS.p2f);
-  if(MS.bmid){
-    const info=findBracketMatch(MS.bmid);
-    if(info){
-      const rt=info.round.roundType;
-      if(rt==='결승'){
-        // 결승 완료 → 전체 순위 즉시 배정
-        assignSeasonPts(info.bg);
-        seedNextGameIfReady(info.bg);
-      } else {
-        // 결승 전 라운드 → 탈락자에게 즉시 임시 순위 배정
-        assignPartialSeasonPts(info.bg, MS.lose, rt);
-      }
+  if(MS.bmid) updateBracket(MS.bmid,MS.win,MS.lose,MS.p1f,MS.p2f);
+
+  // 현재 경기(bg) 찾기
+  const currentBg=S.bracket.find(bg=>bg.gameNum===MS.gameNum);
+  if(currentBg){
+    // 결승전 완료 여부 확인
+    const finalRound=currentBg.rounds[currentBg.rounds.length-1];
+    const finalDone=finalRound.matches.every(m=>m.done);
+    if(finalDone){
+      // 전체 순위 재배정 + 다음 경기 편성
+      assignSeasonPts(currentBg);
+      seedNextGameIfReady(currentBg);
+    } else {
+      // 결승 전 라운드 탈락자 즉시 임시 승점
+      if(MS.lose) assignPartialSeasonPts(currentBg, MS.lose, MS.roundType);
     }
   }
+
   // PO match result
   if(MS.poType&&MS.poMatchKey&&S.playerPO){
     const po=S.playerPO[MS.poType];
@@ -2932,9 +2939,7 @@ function confirmResult(){
     if(m&&m.games[MS.teamPOGameIdx]){
       const g=m.games[MS.teamPOGameIdx];
       g.winnerId=MS.win;g.p1score=MS.p1s;g.p2score=MS.p2s;
-      // Update wins
       if(MS.win===g.p1id)m.winsA++;else m.winsB++;
-      // Check 3판 2선승
       if(m.winsA>=2)m.winner=m.teamA;
       else if(m.winsB>=2)m.winner=m.teamB;
     }
