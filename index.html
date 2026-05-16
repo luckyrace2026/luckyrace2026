@@ -978,6 +978,85 @@ function pStats(id){
   return{g, wins, draws, losses, cumScore, avgScore, pts, uniqueGames, valueRating};
 }
 
+// ─── 특정 경기·라운드 이전 기준 통계 (중계자료용) ───
+// beforeGameNum: 해당 경기 번호 (정수)
+// beforeRoundType: 해당 라운드 ('예선전','16강전',...)
+// 해당 경기의 해당 라운드 직전까지의 기록만 사용
+function pStatsUpTo(id, beforeGameNum, beforeRoundType){
+  const roundOrder = ['예선전','16강전','8강전','준결승','결승'];
+  const beforeRoundIdx = roundOrder.indexOf(beforeRoundType);
+
+  // 포함할 경기 기록 필터:
+  // - 이전 경기(gameNum < beforeGameNum) 전체
+  // - 같은 경기(gameNum === beforeGameNum)에서 beforeRoundType 이전 라운드까지
+  const done = S.matches.filter(m => {
+    if(!m.done) return false;
+    if(m.p1id !== id && m.p2id !== id) return false;
+    const mGameNum = parseInt(m.gameNum);
+    if(mGameNum < beforeGameNum) return true;
+    if(mGameNum === beforeGameNum){
+      const mRoundIdx = roundOrder.indexOf(m.roundType);
+      return mRoundIdx >= 0 && mRoundIdx < beforeRoundIdx;
+    }
+    return false;
+  });
+
+  let wins=0, draws=0, losses=0, cumScore=0;
+  done.forEach(m => {
+    const isP1 = m.p1id === id;
+    cumScore += isP1 ? m.p1score : m.p2score;
+    if(m.isDraw)           draws++;
+    else if(m.winnerId === id) wins++;
+    else                   losses++;
+  });
+
+  const seenGames = new Set();
+  let sPts = 0;
+  done.forEach(m => {
+    if(seenGames.has(m.gameNum)) return;
+    const isP1 = m.p1id === id;
+    const rank = isP1 ? m.p1spts : m.p2spts;
+    if(rank != null){
+      sPts += SPTS_BY_RANK[rank] || 0;
+      seenGames.add(m.gameNum);
+    }
+  });
+
+  const g = done.length;
+  const avgScore = g > 0 ? Math.round(cumScore / g) : 0;
+  const gamePts = wins * 0.5 + draws * 0.25;
+  const pts = parseFloat((sPts + gamePts).toFixed(2));
+  const uniqueGames = new Set(done.map(m => m.gameNum)).size;
+  const valueRating = 0; // 후처리
+  return{g, wins, draws, losses, cumScore, avgScore, pts, uniqueGames, valueRating};
+}
+
+// 특정 시점 기준 전체 가치 평점 계산
+function calcValueRatingsUpTo(beforeGameNum, beforeRoundType){
+  if(!S.players.length) return {};
+  const rawStats = S.players.map(p => pStatsUpTo(p.id, beforeGameNum, beforeRoundType));
+  const hasData = rawStats.filter(s => s.g > 0);
+  const globalAvg = hasData.length > 0
+    ? hasData.reduce((a,s) => a+s.avgScore, 0) / hasData.length
+    : 1;
+  const result = {};
+  S.players.forEach((p, i) => {
+    const s = rawStats[i];
+    let vr = 0;
+    if(s.pts > 0 && s.g > 0 && globalAvg > 0){
+      vr = Math.log10(s.pts) + (s.avgScore / globalAvg);
+    }
+    result[p.id] = parseFloat(vr.toFixed(4));
+  });
+  return result;
+}
+
+function pStatsUpToWithVR(id, beforeGameNum, beforeRoundType, vrMap){
+  const s = pStatsUpTo(id, beforeGameNum, beforeRoundType);
+  s.valueRating = vrMap && vrMap[id] != null ? vrMap[id] : 0;
+  return s;
+}
+
 // ─── 가치 평점 계산 ───
 // 공식: log(승점) + (평균점수) / (전체 평균점수의 평균)
 // 전체 평균점수의 평균 = 모든 선수 avgScore의 평균
@@ -2427,9 +2506,14 @@ function renderBroadcast(){
   if(!round){document.getElementById('bc-matchups').innerHTML='';return;}
   document.getElementById('bc-title').textContent=`${gn} · ${rt} 중계 자료`;
 
-  // 전체 선수 순위 계산 (각 항목별)
-  const _vrMapBC=calcAllValueRatings();
-  const allStats=S.players.map(p=>({p,s:pStatsWithVR(p.id,_vrMapBC)}));
+  // ── 선택한 경기·라운드 이전 데이터 기준으로 통계 계산 ──
+  const beforeGameNum = parseInt(gn);
+  const beforeRoundType = rt;
+  const _vrMapBC = calcValueRatingsUpTo(beforeGameNum, beforeRoundType);
+  const allStats = S.players.map(p=>({
+    p,
+    s: pStatsUpToWithVR(p.id, beforeGameNum, beforeRoundType, _vrMapBC)
+  }));
   // higherIsBetter: true=높을수록 좋음(승점 등), false=낮을수록 좋음(패배수)
   function getRank(pid,key,higherIsBetter=true){
     const sorted=[...allStats].sort((a,b)=>higherIsBetter?b.s[key]-a.s[key]:a.s[key]-b.s[key]);
@@ -2451,7 +2535,8 @@ function renderBroadcast(){
     if(!p1&&!p2)return;
     const p1n=p1?p1.name:'TBD',p2n=p2?p2.name:'TBD';
     const p1t=p1?p1.team||'':'',p2t=p2?p2.team||'':'';
-    const s1=p1?pStats(p1.id):null,s2=p2?pStats(p2.id):null;
+    const s1=p1?allStats.find(x=>x.p.id===p1.id)?.s:null;
+    const s2=p2?allStats.find(x=>x.p.id===p2.id)?.s:null;
     const isDone=m.done;
     const rec=isDone?S.matches.find(x=>x.bracketMatchId&&x.bracketMatchId===m.id):null;
 
@@ -2622,8 +2707,8 @@ function renderBcTeamStatus(gn,rt){
         </tr></thead>
         <tbody>
         ${playerStatuses.map(({p,st})=>{
-          const _vrMapBCTS=calcAllValueRatings();
-          const ps=pStatsWithVR(p.id,_vrMapBCTS);
+          const _vrMapBCTS=calcValueRatingsUpTo(parseInt(gn),rt);
+          const ps=pStatsUpToWithVR(p.id,parseInt(gn),rt,_vrMapBCTS);
           const ptc=avcTeam(p,S.players.indexOf(p));
           return`<tr style="border-top:1px solid var(--line)">
             <td style="padding:5px 6px"><div style="display:flex;align-items:center;gap:6px">
