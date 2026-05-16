@@ -241,6 +241,17 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 .bc-team-card{background:var(--bg3);border-radius:var(--r2);padding:12px 14px;margin-bottom:8px}
 .bc-team-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .bc-status-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;font-weight:500;margin-right:4px;margin-bottom:4px}
+/* ROUND STANDINGS */
+.rnd-std-wrap{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r2);padding:14px 16px;margin-bottom:14px}
+.rnd-std-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.rnd-std-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+.rnd-std-row:last-child{border-bottom:none}
+.rnd-rank{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;min-width:28px;text-align:right}
+.rnd-rank.gold{color:var(--accent)}
+.rnd-rank.silver{color:#a0a8b0}
+.rnd-rank.bronze{color:#9e7a50}
+.rnd-std-section{margin-bottom:6px}
+.rnd-std-section-title{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:4px 0;margin-top:8px}
 .frow{margin-bottom:12px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 /* TEAM COLORS */
@@ -361,7 +372,7 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
           <tbody id="p-rank-body"></tbody>
         </table>
       </div>
-      <div style="margin-top:8px;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">* 승점 = 라운드 시즌 포인트(1위 100pt~) + 경기 승리당 0.5pt &nbsp;|&nbsp; 누적/평균: 원점수 기준</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">* 승점 = 라운드 시즌 포인트(1위 500pt~) + 경기 승리당 0.5pt &nbsp;|&nbsp; 누적/평균: 원점수 기준</div>
       <div id="records-section" class="rec-grid"></div>
     </div>
     <!-- 팀별 순위 -->
@@ -475,6 +486,22 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 
   <!-- 기록 TAB -->
   <div id="tab-history" class="tab">
+    <!-- 라운드 순위표 -->
+    <div class="rnd-std-wrap">
+      <div class="rnd-std-header">
+        <div class="sec-label" style="margin:0">라운드 순위표</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="rnd-std-game" onchange="updateRndStdRounds()" style="padding:5px 8px;font-size:12px">
+            <option value="">경기 선택</option>
+          </select>
+          <select id="rnd-std-round" onchange="renderRoundStandings()" style="padding:5px 8px;font-size:12px">
+            <option value="">라운드 선택</option>
+          </select>
+        </div>
+      </div>
+      <div id="rnd-std-body"><div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">경기와 라운드를 선택하세요.</div></div>
+    </div>
+    <!-- 경기 기록 -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
       <div class="sec-label" style="margin:0;flex:1">경기 기록</div>
       <select id="hist-tab-filter" onchange="renderHistoryTab()" style="max-width:140px;padding:5px 10px;font-size:12px">
@@ -837,7 +864,7 @@ label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;letter-s
 // 순위별 시즌 승점 index=순위(1~20), [0]=미사용
 // 1:100 / 2:70 / 3:50 / 4:45 / 5:40 / 6:30 / 7:25 / 8:20 / 9:15 / 10:14
 // 11:13 / 12:12 / 13:11 / 14:10 / 15:9 / 16:8 / 17:4 / 18:3 / 19:2 / 20:1
-const SPTS=[0,100,70,50,45,40,30,25,20,15,14,13,12,11,10,9,8,4,3,2,1];
+const SPTS=[0,500,350,200,180,120,90,75,60,30,28,26,24,22,20,18,16,4,3,2,1];
 const ROUNDS=['예선전','16강전','8강전','준결승','결승'];
 const ELIM_ROUNDS=['16강전','8강전','준결승','결승'];
 const AB=['rgba(91,156,246,.15)','rgba(76,175,125,.15)','rgba(212,240,76,.12)','rgba(255,179,64,.15)','rgba(168,99,255,.15)','rgba(255,92,92,.12)','rgba(45,212,191,.15)'];
@@ -871,14 +898,30 @@ function load(){
   }catch(e){}
 }
 function repairBracket(){
-  // Fix: if m.done=true but no matching S.matches record exists, reset done flag
   if(!S.bracket||!S.matches)return;
+  // 1. done=true 이지만 기록 없는 매치 복구
   S.bracket.forEach(bg=>bg.rounds.forEach(round=>round.matches.forEach(m=>{
     if(m.done){
       const rec=S.matches.find(x=>x.bracketMatchId&&x.bracketMatchId===m.id);
       if(!rec){m.done=false;m.winnerId=null;}
     }
   })));
+  // 2. 이전 버전에서 직접 포인트(100,70,50...)를 저장한 경우 순위로 역변환
+  // SPTS_BY_RANK 포인트 → 순위 역방향 맵
+  const ptsToRank={};
+  SPTS_BY_RANK.forEach((pts,rank)=>{ if(pts>0) ptsToRank[pts]=rank; });
+  S.matches.forEach(m=>{
+    // 순위는 1~32, 포인트는 1~100. 겹치는 값: 1,2,3,4,8,9,10,11,12,13,14,15,20
+    // 구분: p1spts가 포인트라면 SPTS_BY_RANK에 존재하고 순위범위(1~32) 밖이거나
+    //        실제 포인트 값(100,70,50,45,40,30,25)인 경우
+    const bigPts=[500,350,200,180,120,90,75,60,30,28,26,24,22,20,18,16];
+    [['p1spts'],['p2spts']].forEach(([key])=>{
+      const v=m[key];
+      if(v!=null&&bigPts.includes(v)){
+        m[key]=ptsToRank[v]||null;
+      }
+    });
+  });
 }
 function save(){
   S.updatedAt = Date.now();
@@ -901,29 +944,39 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
 // ─── PLAYER STATS ───
 // cumScore and avgScore use raw scores (p1score/p2score), NOT final (which includes elim bonuses)
+// p1spts / p2spts 에는 순위(1~32)가 저장됨 → SPTS_BY_RANK[순위]로 포인트 변환
 function pStats(id){
-  const done=S.matches.filter(m=>m.done&&(m.p1id===id||m.p2id===id));
-  let wins=0,draws=0,losses=0,cumScore=0,sPts=0;
-  done.forEach(m=>{
-    const isP1=m.p1id===id;
-    // raw score (no elim bonus)
-    cumScore+=isP1?m.p1score:m.p2score;
-    if(m.isDraw){draws++;}
-    else if(m.winnerId===id){wins++;}
-    else{losses++;}
-    // season pts from round ranking (set after final)
-    if(isP1&&m.p1spts!=null)sPts+=(SPTS[m.p1spts]||0);
-    if(!isP1&&m.p2spts!=null)sPts+=(SPTS[m.p2spts]||0);
+  const done = S.matches.filter(m => m.done && (m.p1id === id || m.p2id === id));
+  let wins=0, draws=0, losses=0, cumScore=0;
+  done.forEach(m => {
+    const isP1 = m.p1id === id;
+    cumScore += isP1 ? m.p1score : m.p2score;
+    if(m.isDraw)      draws++;
+    else if(m.winnerId === id) wins++;
+    else              losses++;
   });
-  const g=done.length;
-  const avgScore=g>0?Math.round(cumScore/g):0;
-  const gamePts=wins*0.5+draws*0.25;
-  const pts=parseFloat((sPts+gamePts).toFixed(2));
-  // 가치 평점: log(승점) + 평균점수/전체평균점수, 소수점 4자리
-  const uniqueGames=new Set(done.map(m=>m.gameNum)).size;
-  // 전체 평균점수는 호출 시 전달; 없으면 자체 avgScore 사용(fallback)
-  const valueRating=0; // 후처리로 계산
-  return{g,wins,draws,losses,cumScore,avgScore,pts,uniqueGames,valueRating};
+
+  // 시즌 승점: gameNum별로 한 번만 집계
+  // 한 경기(gameNum)에서 선수의 순위는 하나이므로 첫 번째 non-null 값 사용
+  const seenGames = new Set();
+  let sPts = 0;
+  done.forEach(m => {
+    if(seenGames.has(m.gameNum)) return;
+    const isP1 = m.p1id === id;
+    const rank = isP1 ? m.p1spts : m.p2spts;
+    if(rank != null){
+      sPts += SPTS_BY_RANK[rank] || 0;
+      seenGames.add(m.gameNum);
+    }
+  });
+
+  const g = done.length;
+  const avgScore = g > 0 ? Math.round(cumScore / g) : 0;
+  const gamePts = wins * 0.5 + draws * 0.25;
+  const pts = parseFloat((sPts + gamePts).toFixed(2));
+  const uniqueGames = new Set(done.map(m => m.gameNum)).size;
+  const valueRating = 0; // calcAllValueRatings()에서 후처리
+  return{g, wins, draws, losses, cumScore, avgScore, pts, uniqueGames, valueRating};
 }
 
 // ─── 가치 평점 계산 ───
@@ -1840,98 +1893,186 @@ function findBracketMatch(bmid){
 // ─── ASSIGN SEASON PTS after final ───
 // Collect all results for this gameNum bracket, rank by final score and assign SPTS
 // 결승 전 라운드 탈락 시 즉시 임시 순위 배정
-// 결승 완료 시 assignSeasonPts가 전체 재배정하므로 덮어씌워짐
-function assignPartialSeasonPts(bg, loserId, roundType){
-  const roundBaseRank={'예선전':17,'16강전':9,'8강전':5,'준결승':3};
-  const baseRank=roundBaseRank[roundType];
-  if(!baseRank) return;
-  // 같은 라운드 탈락자 수 세서 순위 계산
-  const sameLosers=S.matches.filter(m=>
-    m.gameNum===bg.gameNum&&m.done&&m.loserId&&
-    bg.rounds.find(r=>r.roundType===roundType&&r.matches.find(bm=>bm.id===m.bracketMatchId))
-  );
-  const loserScores=sameLosers.map(m=>({
-    id:m.loserId,
-    score:m.loserId===m.p1id?m.p1score:m.p2score
-  })).sort((a,b)=>b.score-a.score);
+// ─── SEASON POINTS SYSTEM ───
+// p1spts / p2spts 에는 순위 번호가 아닌 실제 승점 포인트를 직접 저장
+// (기존 순위 번호 저장 방식 완전 폐기)
 
-  loserScores.forEach((l,i)=>{
-    let rank=baseRank+i;
-    if(i>0&&l.score===loserScores[i-1].score){
-      rank=baseRank+i-1;
+// ─── SEASON POINTS ───────────────────────────────────────
+// 규칙:
+// 1. p1spts / p2spts 에는 해당 선수의 이 경기 최종 순위(1~32)를 저장
+// 2. pStats에서 SPTS[순위] 로 포인트 변환
+// 3. 라운드 탈락 시 즉시 순위 배정, 결승 완료 시 전체 재배정
+// ─────────────────────────────────────────────────────────
+
+// 순위별 시즌 승점 (index = 순위, 0은 미사용)
+const SPTS_BY_RANK = [
+  0,   // 0 (미사용)
+  500, // 1위
+  350, // 2위
+  200, // 3위
+  180, // 4위
+  120, // 5위
+  90,  // 6위
+  75,  // 7위
+  60,  // 8위
+  30,  // 9위
+  28,  // 10위
+  26,  // 11위
+  24,  // 12위
+  22,  // 13위
+  20,  // 14위
+  18,  // 15위
+  16,  // 16위
+  4,   // 17위
+  3,   // 18위
+  2,   // 19위
+  1,   // 20위
+  // 21위 이하: 0
+];
+
+function rankToSpts(rank){
+  return SPTS_BY_RANK[rank] || 0;
+}
+
+// 라운드별 탈락자의 최저 순위 기준
+const ROUND_BASE_RANK = {
+  '예선전': 17,
+  '16강전': 9,
+  '8강전':  5,
+  '준결승': 3,
+  '결승':   2,
+};
+
+// ─── 라운드 종료 시 탈락자 순위 배정 ───
+// 해당 라운드 전체가 완료됐을 때만 실행
+function applyRoundPts(bg, roundType){
+  const round = bg.rounds.find(r => r.roundType === roundType);
+  if(!round) return;
+
+  // 선수가 배정된 유효 매치
+  const validMatches = round.matches.filter(m => m.p1id || m.p2id);
+  if(!validMatches.length) return;
+
+  // 라운드 전체 완료 확인
+  if(!validMatches.every(m => m.done)) return;
+
+  const baseRank = ROUND_BASE_RANK[roundType];
+  if(baseRank == null) return;
+
+  // 탈락자 수집 (원점수 기준)
+  const losers = [];
+  validMatches.forEach(m => {
+    const rec = S.matches.find(x => x.bracketMatchId && x.bracketMatchId === m.id);
+    if(!rec || !rec.loserId) return;
+    const rawScore = rec.loserId === rec.p1id ? rec.p1score : rec.p2score;
+    losers.push({ id: rec.loserId, rawScore });
+  });
+
+  if(!losers.length) return;
+
+  // 원점수 내림차순 정렬
+  losers.sort((a, b) => b.rawScore - a.rawScore);
+
+  // 순위 배정 (동점 동일 순위, 이후 순위 밀림)
+  let nextRank = baseRank;
+  losers.forEach((l, i) => {
+    if(i > 0 && l.rawScore === losers[i-1].rawScore){
+      l.rank = losers[i-1].rank;
+    } else {
+      l.rank = nextRank;
     }
-    // 이 탈락자의 모든 경기 기록에 순위 배정
-    S.matches.forEach(m=>{
-      if(m.gameNum!==bg.gameNum) return;
-      if(m.p1id===l.id&&m.p1spts==null) m.p1spts=rank;
-      if(m.p2id===l.id&&m.p2spts==null) m.p2spts=rank;
+    nextRank = l.rank + 1;
+  });
+
+  // 해당 경기(gameNum)의 모든 기록에 순위 저장 (덮어쓰기)
+  losers.forEach(l => {
+    S.matches.forEach(m => {
+      if(m.gameNum !== bg.gameNum) return;
+      if(m.p1id === l.id) m.p1spts = l.rank;
+      if(m.p2id === l.id) m.p2spts = l.rank;
     });
   });
 }
 
+// ─── 결승 완료 시 전체 순위 재배정 ───
 function assignSeasonPts(bg){
-  const gn=bg.gameNum;
-  // 기존 임시 배정 초기화 후 전체 재배정
-  S.matches.forEach(m=>{
-    if(m.gameNum===gn){m.p1spts=null;m.p2spts=null;}
+  const gn = bg.gameNum;
+
+  // 기존 배정 전체 초기화
+  S.matches.forEach(m => {
+    if(m.gameNum === gn){ m.p1spts = null; m.p2spts = null; }
   });
-  const placements=buildPlacements(bg);
-  S.matches.forEach(m=>{
-    if(m.gameNum!==gn) return;
-    const p1place=placements.find(p=>p.id===m.p1id);
-    const p2place=placements.find(p=>p.id===m.p2id);
-    if(p1place) m.p1spts=p1place.rank;
-    if(p2place) m.p2spts=p2place.rank;
+
+  // 예선전부터 준결승까지 탈락자 순위 배정
+  ['예선전','16강전','8강전','준결승'].forEach(rt => {
+    applyRoundPts(bg, rt);
   });
+
+  // 결승: 패자 2위, 승자 1위
+  const finalRound = bg.rounds.find(r => r.roundType === '결승');
+  if(finalRound){
+    finalRound.matches.forEach(m => {
+      if(!m.done) return;
+      const rec = S.matches.find(x => x.bracketMatchId && x.bracketMatchId === m.id);
+      if(!rec) return;
+      if(rec.loserId){
+        S.matches.forEach(match => {
+          if(match.gameNum !== gn) return;
+          if(match.p1id === rec.loserId) match.p1spts = 2;
+          if(match.p2id === rec.loserId) match.p2spts = 2;
+        });
+      }
+      if(rec.winnerId){
+        S.matches.forEach(match => {
+          if(match.gameNum !== gn) return;
+          if(match.p1id === rec.winnerId) match.p1spts = 1;
+          if(match.p2id === rec.winnerId) match.p2spts = 1;
+        });
+      }
+    });
+  }
 }
+
+// 레거시 호환
+function assignPartialSeasonPts(bg, loserId, roundType){
+  applyRoundPts(bg, roundType);
+}
+
 
 function buildPlacements(bg){
-  const placements=[];
-  const roundOrder=['예선전','16강전','8강전','준결승','결승'];
-  // 라운드별 패자 수집
-  const losersPerRound={};
-  roundOrder.forEach(rt=>{losersPerRound[rt]=[];});
-
-  bg.rounds.forEach(round=>{
-    round.matches.forEach(m=>{
-      if(!m.done)return;
-      const rec=S.matches.find(x=>x.bracketMatchId&&x.bracketMatchId===m.id);
-      if(!rec)return;
-      // 결승 승자 → 1위
-      if(round.roundType==='결승'){
-        if(!placements.find(p=>p.id===rec.winnerId))
-          placements.push({id:rec.winnerId,rank:1});
+  // 기록 탭 순위표용으로만 사용 (승점 배정에는 사용 안 함)
+  const result = [];
+  ROUND_ORDER.forEach(rt => {
+    const baseRank = ROUND_BASE_RANK[rt];
+    const round = bg.rounds.find(r => r.roundType === rt);
+    if(!round) return;
+    const losers = [];
+    round.matches.forEach(m => {
+      if(!m.done) return;
+      const rec = S.matches.find(x => x.bracketMatchId && x.bracketMatchId === m.id);
+      if(!rec) return;
+      if(rt === '결승'){
+        const winRaw = rec.winnerId === rec.p1id ? rec.p1score : rec.p2score;
+        result.push({id: rec.winnerId, rank: 1, rawScore: winRaw});
       }
-      // 패자 수집 (원점수 기준)
-      const loserRawScore=rec.loserId===rec.p1id?rec.p1score:rec.p2score;
-      if(rec.loserId)
-        losersPerRound[round.roundType].push({id:rec.loserId,rawScore:loserRawScore});
+      if(rec.loserId){
+        const loserRaw = rec.loserId === rec.p1id ? rec.p1score : rec.p2score;
+        losers.push({id: rec.loserId, rawScore: loserRaw});
+      }
+    });
+    losers.sort((a,b) => b.rawScore - a.rawScore);
+    let rank = baseRank;
+    losers.forEach((l,i) => {
+      if(i > 0 && l.rawScore === losers[i-1].rawScore){
+        l.rank = losers[i-1].rank;
+      } else {
+        l.rank = rank;
+      }
+      rank++;
+      result.push(l);
     });
   });
-
-  // 라운드별 기준 순위 (패자 중 1등이 받는 순위)
-  // 결승패자=2위, 준결승패자=3~4위, 8강패자=5~8위, 16강패자=9~16위, 예선패자=17~32위
-  const roundBaseRank={
-    '결승':2,'준결승':3,'8강전':5,'16강전':9,'예선전':17
-  };
-
-  roundOrder.forEach(rt=>{
-    const losers=[...losersPerRound[rt]].sort((a,b)=>b.rawScore-a.rawScore);
-    if(!losers.length)return;
-    let curRank=roundBaseRank[rt]||17;
-    for(let i=0;i<losers.length;i++){
-      // 동점이면 같은 순위
-      if(i>0&&losers[i].rawScore===losers[i-1].rawScore){
-        const prevPlacement=placements[placements.length-1];
-        placements.push({id:losers[i].id,rank:prevPlacement.rank});
-      } else {
-        placements.push({id:losers[i].id,rank:curRank});
-      }
-      curRank++;
-    }
-  });
-
-  return placements;
+  return result.sort((a,b) => a.rank - b.rank);
 }
 
 function updateBracket(bmid,win,lose,p1Final,p2Final){
@@ -2013,12 +2154,170 @@ function renderHistItem(m){
   </div>`;
 }
 function renderHistoryTab(){
+  // 라운드 순위표 드롭다운 초기화
+  initRndStdSelectors();
   const el=document.getElementById('history-body');
   const filterVal=document.getElementById('hist-tab-filter').value;
   let done=S.matches.filter(m=>m.done).reverse();
   if(filterVal!=='all')done=done.filter(m=>m.gameNum===filterVal);
   if(!done.length){el.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3)">기록 없음</div>';return;}
   el.innerHTML=done.map(m=>renderHistItem(m)).join('');
+}
+
+function initRndStdSelectors(){
+  const gameSel=document.getElementById('rnd-std-game');
+  const roundSel=document.getElementById('rnd-std-round');
+  if(!gameSel||!roundSel) return;
+  const prevGame=gameSel.value;
+  gameSel.innerHTML='<option value="">경기 선택</option>';
+  // 진행된(seeded) 경기만 표시
+  S.bracket.filter(bg=>bg.seeded).forEach(bg=>{
+    const opt=document.createElement('option');
+    opt.value=bg.gameNum; opt.textContent=bg.gameNum;
+    gameSel.appendChild(opt);
+  });
+  if(prevGame) gameSel.value=prevGame;
+  updateRndStdRounds();
+}
+
+function updateRndStdRounds(){
+  const gameSel=document.getElementById('rnd-std-game');
+  const roundSel=document.getElementById('rnd-std-round');
+  if(!gameSel||!roundSel) return;
+  const prevRound=roundSel.value;
+  roundSel.innerHTML='<option value="">라운드 선택</option>';
+  const bg=S.bracket.find(b=>b.gameNum===gameSel.value);
+  if(!bg){renderRoundStandings();return;}
+  // 완료된 라운드만 표시
+  bg.rounds.forEach(r=>{
+    const allDone=r.matches.filter(m=>m.p1id||m.p2id).every(m=>m.done);
+    if(!allDone) return; // 아직 진행중인 라운드는 미포함
+    const opt=document.createElement('option');
+    opt.value=r.roundType; opt.textContent=r.roundType;
+    roundSel.appendChild(opt);
+  });
+  if(prevRound) roundSel.value=prevRound;
+  renderRoundStandings();
+}
+
+function renderRoundStandings(){
+  const el=document.getElementById('rnd-std-body');
+  if(!el) return;
+  const gameSel=document.getElementById('rnd-std-game');
+  const roundSel=document.getElementById('rnd-std-round');
+  const gn=gameSel?gameSel.value:'';
+  const rt=roundSel?roundSel.value:'';
+  if(!gn||!rt){
+    el.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">경기와 라운드를 선택하세요.</div>';
+    return;
+  }
+  const bg=S.bracket.find(b=>b.gameNum===gn);
+  if(!bg){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px">데이터 없음</div>';return;}
+
+  // 선택 라운드까지 완료된 순위 계산
+  const standings=buildStandingsUpTo(bg, rt);
+  if(!standings.length){
+    el.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">아직 완료된 경기 기록이 없습니다.</div>';
+    return;
+  }
+
+  const roundLabel={'예선전':'예선전 종료','16강전':'16강전 종료','8강전':'8강전 종료','준결승':'준결승 종료','결승':'결승 종료 (최종)'};
+  // 라운드별 누적 표시 인원: 예선(16명), 16강(24명), 8강(28명), 준결승(30명), 결승(32명)
+  const roundShowCount={'예선전':16,'16강전':24,'8강전':28,'준결승':30,'결승':32};
+  const showCount=roundShowCount[rt]||standings.length;
+  const visibleStandings=standings.slice(0,showCount);
+  let html=`<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace">${gn} · ${roundLabel[rt]||rt} 기준 순위 (${visibleStandings.length}명)</div>`;
+
+  // 구간별 색상
+  const sectionLabels={'결승':{from:1,to:1,label:'🏆 우승'},'준결승':{from:2,to:2,label:'🥈 준우승'}};
+  const roundRanges={
+    '결승':   [{from:1,to:1,label:'🏆 1위 (우승)'},{from:2,to:2,label:'2위'},{from:3,to:4,label:'3~4위'},{from:5,to:8,label:'5~8위'},{from:9,to:16,label:'9~16위'},{from:17,to:99,label:'17위 이하'}],
+    '준결승':  [{from:3,to:4,label:'준결승 탈락 (3~4위)'},{from:5,to:8,label:'8강 탈락 (5~8위)'},{from:9,to:16,label:'16강 탈락 (9~16위)'},{from:17,to:99,label:'예선 탈락 (17위 이하)'}],
+    '8강전':   [{from:5,to:8,label:'8강 탈락 (5~8위)'},{from:9,to:16,label:'16강 탈락 (9~16위)'},{from:17,to:99,label:'예선 탈락 (17위 이하)'}],
+    '16강전':  [{from:9,to:16,label:'16강 탈락 (9~16위)'},{from:17,to:99,label:'예선 탈락 (17위 이하)'}],
+    '예선전':  [{from:17,to:99,label:'예선 탈락'}],
+  };
+
+  const sections=roundRanges[rt]||[{from:1,to:99,label:'전체'}];
+  sections.forEach(sec=>{
+    const rows=visibleStandings.filter(s=>s.rank>=sec.from&&s.rank<=sec.to);
+    if(!rows.length) return;
+    html+=`<div class="rnd-std-section"><div class="rnd-std-section-title">${sec.label}</div>`;
+    rows.forEach(s=>{
+      const p=sp(s.id);
+      const tc=p?avcTeam(p,S.players.indexOf(p)):{bg:'var(--bg3)',tx:'var(--text2)'};
+      const rankCls=s.rank===1?'gold':s.rank===2?'silver':s.rank===3||s.rank===4?'bronze':'';
+      const spts=SPTS_BY_RANK[s.rank]||0;
+      html+=`<div class="rnd-std-row">
+        <span class="rnd-rank ${rankCls}">${s.rank}위</span>
+        <div class="avatar" style="background:${tc.bg};color:${tc.tx};width:24px;height:24px;font-size:9px;flex-shrink:0">${p?ini(p.name):'?'}</div>
+        <div style="flex:1">
+          <span style="font-weight:500">${p?p.name:'알 수 없음'}</span>
+          <span style="font-size:11px;color:var(--text3);margin-left:6px">${p?p.team||'':''}</span>
+        </div>
+        <div style="text-align:right;font-family:'DM Mono',monospace;font-size:12px">
+          ${spts?`<span style="color:var(--accent);font-weight:700">+${spts}pt</span>`:
+            `<span style="color:var(--text3)">0pt</span>`}
+          <span style="color:var(--text3);font-size:10px;margin-left:6px">원점수 ${s.rawScore}</span>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+
+  el.innerHTML=html;
+}
+
+// 선택한 라운드까지 완료된 경기를 기반으로 순위 계산
+function buildStandingsUpTo(bg, upToRound){
+  const roundOrder=['예선전','16강전','8강전','준결승','결승'];
+  const upToIdx=roundOrder.indexOf(upToRound);
+  const result=[]; // {id, rank, rawScore, roundType}
+
+  // 각 라운드 패자 수집 (upToRound 이하만)
+  const roundBaseRank={
+    '결승':2,'준결승':3,'8강전':5,'16강전':9,'예선전':17
+  };
+  const losersPerRound={};
+  roundOrder.forEach(rt=>{losersPerRound[rt]=[];});
+
+  bg.rounds.forEach(round=>{
+    const ri=roundOrder.indexOf(round.roundType);
+    if(ri<0||ri>upToIdx) return;
+    round.matches.forEach(m=>{
+      if(!m.done) return;
+      const rec=S.matches.find(x=>x.bracketMatchId&&x.bracketMatchId===m.id);
+      if(!rec) return;
+      // 결승 승자 = 1위
+      if(round.roundType==='결승'){
+        result.push({id:rec.winnerId,rank:1,rawScore:rec.winnerId===rec.p1id?rec.p1score:rec.p2score,roundType:'결승'});
+      }
+      // 패자 수집
+      const loserRaw=rec.loserId===rec.p1id?rec.p1score:rec.p2score;
+      if(rec.loserId)
+        losersPerRound[round.roundType].push({id:rec.loserId,rawScore:loserRaw});
+    });
+  });
+
+  // 라운드별 패자 순위 배정
+  roundOrder.forEach(rt=>{
+    const ri=roundOrder.indexOf(rt);
+    if(ri>upToIdx) return;
+    const losers=[...losersPerRound[rt]].sort((a,b)=>b.rawScore-a.rawScore);
+    if(!losers.length) return;
+    let curRank=roundBaseRank[rt]||17;
+    losers.forEach((l,i)=>{
+      let rank=curRank;
+      if(i>0&&l.rawScore===losers[i-1].rawScore){
+        rank=result[result.length-1]?result[result.length-1].rank:curRank;
+      }
+      result.push({id:l.id,rank,rawScore:l.rawScore,roundType:rt});
+      curRank++;
+    });
+  });
+
+  // 순위 오름차순 정렬
+  return result.sort((a,b)=>a.rank-b.rank||b.rawScore-a.rawScore);
 }
 function renderHistory(){renderManualHistory();}
 
@@ -2399,7 +2698,6 @@ function importData(input){
   };
   reader.readAsText(file);
 }
-function closeSettings(){hideM('modal-settings');}
 
 function toggleMatchResetMode(){
   matchResetMode=!matchResetMode;
@@ -2601,7 +2899,6 @@ function clearDownstream(bg,ri,mi){
     clearDownstream(bg,ri+1,Math.floor(mi/2));
   }
 }
-function closeSettings(){hideM('modal-settings');}
 function resetSeason(){if(!confirm('경기 기록을 모두 삭제합니다.'))return;S.matches=[];buildBracket();save();closeSettings();refreshAll();}
 function fullReset(){if(!confirm('모든 데이터를 초기화합니다.'))return;S={init:false,players:[],matches:[],bracket:[]};setupPs=[];save();showView('view-setup');renderSetupList();}
 function openAddModal(){showM('modal-add');}
@@ -2631,14 +2928,22 @@ function openPModal(pid){
   let ptsByGame={};
   gameNums.forEach(gn=>{
     const gMatches=done.filter(m=>m.gameNum===gn);
-    let gPts=0;
-    gMatches.forEach(m=>{
+    let gSpts=0, gRank=null;
+    // 해당 게임에서 이 선수의 순위(첫 번째 non-null)
+    for(const m of gMatches){
       const isP1=m.p1id===pid;
-      if(isP1&&m.p1spts!=null)gPts+=(SPTS[m.p1spts]||0);
-      if(!isP1&&m.p2spts!=null)gPts+=(SPTS[m.p2spts]||0);
-    });
+      const rank=isP1?m.p1spts:m.p2spts;
+      if(rank!=null){ gRank=rank; gSpts=SPTS_BY_RANK[rank]||0; break; }
+    }
     const winCount=gMatches.filter(m=>m.winnerId===pid).length;
-    ptsByGame[gn]={spts:gPts,wins:winCount,gamePts:winCount*0.5};
+    // 라운드별 승리 수
+    const roundWins={};
+    gMatches.forEach(m=>{
+      if(m.winnerId===pid){
+        roundWins[m.roundType]=(roundWins[m.roundType]||0)+1;
+      }
+    });
+    ptsByGame[gn]={spts:gSpts,rank:gRank,wins:winCount,gamePts:winCount*0.5,roundWins};
   });
   let html=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
     <div class="stat-tile"><div class="st-lbl">총 승점</div><div class="st-val" style="font-size:18px">${fmt(s.pts)}</div></div>
@@ -2652,22 +2957,62 @@ function openPModal(pid){
     gameNums.forEach(gn=>{
       const d=ptsByGame[gn];
       const total=parseFloat((d.spts+d.gamePts).toFixed(1));
-      html+=`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--line)">
-        <span style="color:var(--text2)">${gn}</span>
-        <span>시즌 ${d.spts}pt + 승리 ${d.gamePts}pt = <b style="color:var(--accent)">${total}pt</b></span>
+      const rankStr=d.rank!=null?`<span style="color:var(--text3);font-size:10px;margin-right:6px">${d.rank}위</span>`:'';
+      // 라운드별 승리 요약
+      const roundWinStr=Object.entries(d.roundWins||{}).map(([rt,w])=>`${rt} ${w}승`).join(' · ');
+      html+=`<div style="padding:5px 0;border-bottom:1px solid var(--line)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:var(--text2);font-weight:500">${gn}</span>
+          <div style="text-align:right">
+            ${rankStr}<b style="color:var(--accent)">${total}pt</b>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;display:flex;justify-content:space-between">
+          <span>${roundWinStr||'승리 없음'}</span>
+          <span>시즌 ${d.spts}pt + 승리 ${d.gamePts}pt</span>
+        </div>
       </div>`;
     });
     html+=`</div>`;
   }
-  // Match history
-  html+=`<div class="sec-label">경기 기록</div><div style="background:var(--bg3);border-radius:var(--r);padding:4px 12px;font-size:12px">`;
-  if(!done.length){html+=`<div style="padding:12px 0;color:var(--text3);text-align:center">경기 기록 없음</div>`;}
+  // Match history — 드롭다운 필터
+  const allGames=[...new Set(done.map(m=>m.gameNum))].sort((a,b)=>parseInt(a)-parseInt(b));
+  const gameOpts=`<option value="recent5">최근 5경기</option>`
+    +allGames.map(gn=>`<option value="${gn}">${gn}</option>`).join('');
+  html+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+    <div class="sec-label" style="margin:0">경기 기록</div>
+    <select id="pm-game-filter" onchange="renderPModalHistory('${pid}')" style="padding:4px 8px;font-size:11px;width:auto">
+      ${gameOpts}
+    </select>
+  </div>
+  <div id="pm-history-body" style="background:var(--bg3);border-radius:var(--r);padding:4px 12px;font-size:12px"></div>`;
+  document.getElementById('pm-body').innerHTML=html;
+  renderPModalHistory(pid);
+  showM('modal-player');
+}
+
+function renderPModalHistory(pid){
+  const el=document.getElementById('pm-history-body');
+  if(!el) return;
+  const sel=document.getElementById('pm-game-filter');
+  const filter=sel?sel.value:'recent5';
+  let done=S.matches.filter(m=>m.done&&(m.p1id===pid||m.p2id===pid));
+  // 최신순 정렬
+  const roundOrder=['예선전','16강전','8강전','준결승','결승'];
+  done.sort((a,b)=>{
+    const ga=parseInt(a.gameNum),gb=parseInt(b.gameNum);
+    if(ga!==gb) return gb-ga;
+    return roundOrder.indexOf(b.roundType)-roundOrder.indexOf(a.roundType);
+  });
+  if(filter==='recent5') done=done.slice(0,5);
+  else done=done.filter(m=>m.gameNum===filter);
+  if(!done.length){el.innerHTML=`<div style="padding:12px 0;color:var(--text3);text-align:center">경기 기록 없음</div>`;return;}
+  let html='';
   done.forEach(m=>{
     const isP1=m.p1id===pid;
     const myScore=isP1?m.p1score:m.p2score;
     const myFinal=isP1?m.p1final:m.p2final;
     const oppScore=isP1?m.p2score:m.p1score;
-    const oppFinal=isP1?m.p2final:m.p1final;
     const oppName=isP1?m.p2name:m.p1name;
     const won=m.winnerId===pid;
     const bonus=myFinal-myScore;
@@ -2682,9 +3027,7 @@ function openPModal(pid){
       </div>
     </div>`;
   });
-  html+=`</div>`;
-  document.getElementById('pm-body').innerHTML=html;
-  showM('modal-player');
+  el.innerHTML=html;
 }
 function closePModal(){hideM('modal-player');}
 
