@@ -1700,7 +1700,9 @@ function renderMC(m,gi){
   const inputBtn=matchInputMode&&p1n&&p2n?`<button class="btn btn-sm" style="border-color:rgba(91,156,246,.4);color:var(--blue);font-size:11px;padding:3px 8px" onclick="openResultInput('${m.id}',${gi})">결과 입력</button>`:'';
   const modeBtn=matchResetMode?resetBtn:matchInputMode?inputBtn:null;
   if(m.done){
-    const rec=S.matches.find(x=>x.bracketMatchId&&x.bracketMatchId===m.id);
+    const bg=S.bracket[gi];
+    const gn=bg?bg.gameNum:null;
+    const rec=S.matches.find(x=>x.bracketMatchId&&x.bracketMatchId===m.id&&(!gn||x.gameNum===gn));
     if(!rec){
       if(!p1n||!p2n){return`<div class="mc" style="opacity:.4"><div class="mch"><span class="mcl">${m.roundType}</span>${modeBtn||''}</div><div class="mslot"><span class="tbd">미정</span></div><div class="mslot"><span class="tbd">미정</span></div></div>`;}
       const isNext=isNextM(m,gi);
@@ -1962,7 +1964,12 @@ function applyRoundPts(bg, roundType){
   // 탈락자 수집 (원점수 기준)
   const losers = [];
   validMatches.forEach(m => {
-    const rec = S.matches.find(x => x.bracketMatchId && x.bracketMatchId === m.id);
+    // gameNum + bracketMatchId 모두 확인
+    const rec = S.matches.find(x =>
+      x.gameNum === bg.gameNum &&
+      x.bracketMatchId &&
+      x.bracketMatchId === m.id
+    );
     if(!rec || !rec.loserId) return;
     const rawScore = rec.loserId === rec.p1id ? rec.p1score : rec.p2score;
     losers.push({ id: rec.loserId, rawScore });
@@ -2008,13 +2015,20 @@ function assignSeasonPts(bg){
     applyRoundPts(bg, rt);
   });
 
-  // 결승: 패자 2위, 승자 1위
+  // 결승: gameNum + bracketMatchId 모두 확인하여 정확한 기록 찾기
   const finalRound = bg.rounds.find(r => r.roundType === '결승');
   if(finalRound){
-    finalRound.matches.forEach(m => {
-      if(!m.done) return;
-      const rec = S.matches.find(x => x.bracketMatchId && x.bracketMatchId === m.id);
+    finalRound.matches.forEach(bracketMatch => {
+      if(!bracketMatch.done) return;
+      // gameNum과 bracketMatchId 둘 다 일치하는 기록만
+      const rec = S.matches.find(x =>
+        x.gameNum === gn &&
+        x.bracketMatchId &&
+        x.bracketMatchId === bracketMatch.id
+      );
       if(!rec) return;
+
+      // 2위: 결승 패자
       if(rec.loserId){
         S.matches.forEach(match => {
           if(match.gameNum !== gn) return;
@@ -2022,6 +2036,7 @@ function assignSeasonPts(bg){
           if(match.p2id === rec.loserId) match.p2spts = 2;
         });
       }
+      // 1위: 결승 승자
       if(rec.winnerId){
         S.matches.forEach(match => {
           if(match.gameNum !== gn) return;
@@ -2049,7 +2064,12 @@ function buildPlacements(bg){
     const losers = [];
     round.matches.forEach(m => {
       if(!m.done) return;
-      const rec = S.matches.find(x => x.bracketMatchId && x.bracketMatchId === m.id);
+      // gameNum + bracketMatchId 모두 확인
+      const rec = S.matches.find(x =>
+        x.gameNum === bg.gameNum &&
+        x.bracketMatchId &&
+        x.bracketMatchId === m.id
+      );
       if(!rec) return;
       if(rt === '결승'){
         const winRaw = rec.winnerId === rec.p1id ? rec.p1score : rec.p2score;
@@ -2286,7 +2306,12 @@ function buildStandingsUpTo(bg, upToRound){
     if(ri<0||ri>upToIdx) return;
     round.matches.forEach(m=>{
       if(!m.done) return;
-      const rec=S.matches.find(x=>x.bracketMatchId&&x.bracketMatchId===m.id);
+      // gameNum + bracketMatchId 모두 확인
+      const rec=S.matches.find(x=>
+        x.gameNum===bg.gameNum &&
+        x.bracketMatchId&&
+        x.bracketMatchId===m.id
+      );
       if(!rec) return;
       // 결승 승자 = 1위
       if(round.roundType==='결승'){
